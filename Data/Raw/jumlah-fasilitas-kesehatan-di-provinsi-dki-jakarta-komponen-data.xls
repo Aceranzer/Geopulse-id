@@ -1,0 +1,111 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head >
+  <body>
+    
+    <table>
+      <thead>
+        <tr><th><b>periode_data</b></th><th><b>wilayah</b></th><th><b>jenis_fasilitas_kesehatan</b></th><th><b>jumlah_fasilitas_kesehatan</b></th></tr>
+      </thead>
+      <tbody>
+        <tr><td>2023</td><td>DKI JAKARTA</td><td>JUMLAH RUMAH SAKIT</td><td>196</td></tr>
+        <tr><td>2023</td><td>DKI JAKARTA</td><td>TEMPAT TIDUR</td><td>27699</td></tr>
+        <tr><td>2023</td><td>DKI JAKARTA</td><td>RUMAH SAKIT BERSALIN/RUMAH BERSALIN</td><td>23</td></tr>
+        <tr><td>2023</td><td>DKI JAKARTA</td><td>TEMPAT TIDUR PERSALINAN</td><td>1073</td></tr>
+        <tr><td>2023</td><td>DKI JAKARTA</td><td>PUSKESMAS KECAMATAN</td><td>44</td></tr>
+        <tr><td>2023</td><td>DKI JAKARTA</td><td>PUSKESMAS KELURAHAN</td><td>292</td></tr>
+        <tr><td>2023</td><td>DKI JAKARTA</td><td>FASKES KLINIK PRATAMA</td><td>1289</td></tr>
+        <tr><td>2023</td><td>DKI JAKARTA</td><td>FASKES KLINIK SPESIALIS</td><td>651</td></tr>
+        <tr><td>2023</td><td>DKI JAKARTA</td><td>FASKES LABORATORIUM KESEHATAN</td><td>75</td></tr>
+        <tr><td>2023</td><td>DKI JAKARTA</td><td>FASKES APOTEK</td><td>2367</td></tr>
+        <tr><td>2023</td><td>DKI JAKARTA</td><td>POSYANDU</td><td>4475</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA BARAT</td><td>KHUSUS</td><td>5</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA BARAT</td><td>UMUM</td><td>20</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA BARAT</td><td>RUMAH SAKIT BERSALIN</td><td>2</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA BARAT</td><td>PUSKESMAS </td><td>75</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA BARAT</td><td>KLINIK/BALAI KESEHATAN</td><td>754</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA BARAT</td><td>POSYANDU</td><td>853</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA BARAT</td><td>POLINDES</td><td>0</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA PUSAT</td><td>KHUSUS</td><td>8</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA PUSAT</td><td>UMUM</td><td>27</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA PUSAT</td><td>RUMAH SAKIT BERSALIN</td><td>2</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA PUSAT</td><td>PUSKESMAS </td><td>44</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA PUSAT</td><td>KLINIK/BALAI KESEHATAN</td><td>350</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA PUSAT</td><td>POSYANDU</td><td>486</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA PUSAT</td><td>POLINDES</td><td>0</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA SELATAN</td><td>KHUSUS</td><td>9</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA SELATAN</td><td>UMUM</td><td>37</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA SELATAN</td><td>RUMAH SAKIT BERSALIN</td><td>5</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA SELATAN</td><td>PUSKESMAS </td><td>78</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA SELATAN</td><td>KLINIK/BALAI KESEHATAN</td><td>666</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA SELATAN</td><td>POSYANDU</td><td>1257</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA SELATAN</td><td>POLINDES</td><td>0</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA TIMUR</td><td>KHUSUS</td><td>9</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA TIMUR</td><td>UMUM</td><td>31</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA TIMUR</td><td>RUMAH SAKIT BERSALIN</td><td>4</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA TIMUR</td><td>PUSKESMAS </td><td>83</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA TIMUR</td><td>KLINIK/BALAI KESEHATAN</td><td>443</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA TIMUR</td><td>POSYANDU</td><td>1192</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA TIMUR</td><td>POLINDES</td><td>0</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA UTARA</td><td>KHUSUS</td><td>2</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA UTARA</td><td>UMUM</td><td>23</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA UTARA</td><td>RUMAH SAKIT BERSALIN</td><td>3</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA UTARA</td><td>PUSKESMAS </td><td>49</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA UTARA</td><td>KLINIK/BALAI KESEHATAN</td><td>407</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA UTARA</td><td>POSYANDU</td><td>656</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA UTARA</td><td>POLINDES</td><td>0</td></tr>
+        <tr><td>2024</td><td>KAB. ADM. KEP. SERIBU</td><td>KHUSUS</td><td>0</td></tr>
+        <tr><td>2024</td><td>KAB. ADM. KEP. SERIBU</td><td>UMUM</td><td>1</td></tr>
+        <tr><td>2024</td><td>KAB. ADM. KEP. SERIBU</td><td>RUMAH SAKIT BERSALIN</td><td>0</td></tr>
+        <tr><td>2024</td><td>KAB. ADM. KEP. SERIBU</td><td>PUSKESMAS </td><td>7</td></tr>
+        <tr><td>2024</td><td>KAB. ADM. KEP. SERIBU</td><td>KLINIK/BALAI KESEHATAN</td><td>0</td></tr>
+        <tr><td>2024</td><td>KAB. ADM. KEP. SERIBU</td><td>POSYANDU</td><td>37</td></tr>
+        <tr><td>2024</td><td>KAB. ADM. KEP. SERIBU</td><td>POLINDES</td><td>0</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA BARAT</td><td>KHUSUS</td><td>5</td></tr>
+        <tr><td>2025</td><td>KAB. ADM. KEP. SERIBU</td><td>POLINDES</td><td>0</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA BARAT</td><td>RUMAH SAKIT BERSALIN</td><td>2</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA BARAT</td><td>PUSKESMAS</td><td>75</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA BARAT</td><td>KLINIK/BALAI KESEHATAN</td><td>754</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA BARAT</td><td>POSYANDU</td><td>853</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA BARAT</td><td>POLINDES</td><td>0</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA PUSAT</td><td>KHUSUS</td><td>8</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA PUSAT</td><td>UMUM</td><td>27</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA PUSAT</td><td>RUMAH SAKIT BERSALIN</td><td>2</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA PUSAT</td><td>PUSKESMAS</td><td>44</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA PUSAT</td><td>KLINIK/BALAI KESEHATAN</td><td>350</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA PUSAT</td><td>POSYANDU</td><td>486</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA PUSAT</td><td>POLINDES</td><td>0</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA SELATAN</td><td>KHUSUS</td><td>9</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA SELATAN</td><td>UMUM</td><td>37</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA SELATAN</td><td>RUMAH SAKIT BERSALIN</td><td>5</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA SELATAN</td><td>PUSKESMAS</td><td>78</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA SELATAN</td><td>KLINIK/BALAI KESEHATAN</td><td>666</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA SELATAN</td><td>POSYANDU</td><td>1257</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA SELATAN</td><td>POLINDES</td><td>0</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA TIMUR</td><td>KHUSUS</td><td>9</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA TIMUR</td><td>UMUM</td><td>31</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA TIMUR</td><td>RUMAH SAKIT BERSALIN</td><td>4</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA TIMUR</td><td>PUSKESMAS</td><td>83</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA TIMUR</td><td>KLINIK/BALAI KESEHATAN</td><td>443</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA TIMUR</td><td>POSYANDU</td><td>1192</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA TIMUR</td><td>POLINDES</td><td>0</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA UTARA</td><td>KHUSUS</td><td>2</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA UTARA</td><td>UMUM</td><td>23</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA UTARA</td><td>RUMAH SAKIT BERSALIN</td><td>3</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA UTARA</td><td>PUSKESMAS</td><td>49</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA UTARA</td><td>KLINIK/BALAI KESEHATAN</td><td>407</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA UTARA</td><td>POSYANDU</td><td>656</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA UTARA</td><td>POLINDES</td><td>0</td></tr>
+        <tr><td>2025</td><td>KAB. ADM. KEP. SERIBU</td><td>KHUSUS</td><td>0</td></tr>
+        <tr><td>2025</td><td>KAB. ADM. KEP. SERIBU</td><td>UMUM</td><td>1</td></tr>
+        <tr><td>2025</td><td>KAB. ADM. KEP. SERIBU</td><td>RUMAH SAKIT BERSALIN</td><td>0</td></tr>
+        <tr><td>2025</td><td>KAB. ADM. KEP. SERIBU</td><td>PUSKESMAS</td><td>7</td></tr>
+        <tr><td>2025</td><td>KAB. ADM. KEP. SERIBU</td><td>KLINIK/BALAI KESEHATAN</td><td>0</td></tr>
+        <tr><td>2025</td><td>KAB. ADM. KEP. SERIBU</td><td>POSYANDU</td><td>37</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA BARAT</td><td>UMUM</td><td>20</td></tr>
+      </tbody>
+    </table>
+  
+  </body>
+</html >
