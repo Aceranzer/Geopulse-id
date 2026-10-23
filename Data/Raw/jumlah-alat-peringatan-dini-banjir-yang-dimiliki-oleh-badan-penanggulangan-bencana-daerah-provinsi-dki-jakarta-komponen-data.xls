@@ -1,0 +1,42 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head >
+  <body>
+    
+    <table>
+      <thead>
+        <tr><th><b>periode_data</b></th><th><b>lokasi</b></th><th><b>longitude</b></th><th><b>latitude</b></th><th><b>jumlah</b></th></tr>
+      </thead>
+      <tbody>
+        <tr><td>2024</td><td>JL. SUKA MENANTI RT 04 RW 11 RAWA BUAYA CENGKARENG JAKBAR (TITIK LOKASI RUMAH PAK RW)</td><td>-6.1597252</td><td>106.7451168</td><td>1</td></tr>
+        <tr><td>2024</td><td>JL.KP.BARU NO 77 TITIK LOKASI RPTRA KAMPUNG BARU</td><td>-6.1664889</td><td>106.7526844</td><td>1</td></tr>
+        <tr><td>2024</td><td>JL. CILEDUG RAYA NO 11A CIPULIS JAKSEL TITIK LOKASI DI TPU</td><td>-6.238935</td><td>106.766347</td><td>1</td></tr>
+        <tr><td>2024</td><td>JL. BERDIKARI 1 NO 58 KAPUK CENGKARENG JAKBAR</td><td>-6.1428167</td><td>106.768891</td><td>1</td></tr>
+        <tr><td>2024</td><td>JL. NEDERLANDSE INTERNATIONAL NO 14 TITIK LOKASI LAPANGAN</td><td>-6.2892828</td><td>106.8089504</td><td>1</td></tr>
+        <tr><td>2024</td><td>KANTOR KEL PETOGOGAN LT.3</td><td>-6.2442148</td><td>106.8135128</td><td>1</td></tr>
+        <tr><td>2024</td><td>JL RUKUN PEJATEN TIMUR PS.MINGGU JAKSEL LOKASI SDN PEJATEN TIMUR</td><td>-6.2834487</td><td>106.8550773</td><td>1</td></tr>
+        <tr><td>2024</td><td>KOTA ADM. JAKARTA SELATAN, RT.6/RW.1, PENGADEGAN, KEC. PANCORAN, KOTA KOTA ADM. JAKARTA SELATAN, DAERAH KHUSUS IBUKOTA JAKARTA 12770</td><td>-6.2507397</td><td>106.8612517</td><td>1</td></tr>
+        <tr><td>2024</td><td>JL. SENSUS NO 1 TITIK LOKASI BANTARAN SUNGAI CILIWUNG DEKAT GUDANG PELURU</td><td>-6.231194</td><td>106.863806</td><td>1</td></tr>
+        <tr><td>2024</td><td>RT. 10/RW. 1, KP. MELAYU, KECAMATAN JATINEGARA, KOTA KOTA ADM. JAKARTA TIMUR, DAERAH KHUSUS IBUKOTA JAKARTA 13320 (BELAKANG RS. HERMINA)</td><td>-6.2207737</td><td>106.8642746</td><td>1</td></tr>
+        <tr><td>2024</td><td>JL.DEWI SARTIKA CAWANG JAKTIM</td><td>-6.239876</td><td>106.865396</td><td>1</td></tr>
+        <tr><td>2024</td><td>JL. PUSKESMAS NO 58 HALIM JAKTIM TITIK LOKASI DEPAN MASJID JAMI AL-IKHLAS</td><td>-6.2612794</td><td>106.8811254</td><td>1</td></tr>
+        <tr><td>2024</td><td>JL. SUNTER JAYA IV A, RT.3/RW.4, CIPINANG MELAYU, KEC. MAKASAR, KOTA KOTA ADM. JAKARTA TIMUR, DAERAH KHUSUS IBUKOTA JAKARTA 13620</td><td>-6.2412821</td><td>106.8903157</td><td>1</td></tr>
+        <tr><td>2025</td><td>JL. SUKA MENANTI RT 04 RW 11 RAWA BUAYA CENGKARENG JAKBAR (TITIK LOKASI RUMAH PAK RW)</td><td>-6.1597252</td><td>106.7451168</td><td>1</td></tr>
+        <tr><td>2025</td><td>JL.KP.BARU NO 77 TITIK LOKASI RPTRA KAMPUNG BARU</td><td>-6.1664889</td><td>106.7526844</td><td>1</td></tr>
+        <tr><td>2025</td><td>JL. CILEDUG RAYA NO 11A CIPULIS JAKSEL TITIK LOKASI DI TPU</td><td>-6.238935</td><td>106.766347</td><td>1</td></tr>
+        <tr><td>2025</td><td>JL. BERDIKARI 1 NO 58 KAPUK CENGKARENG JAKBAR</td><td>-6.1428167</td><td>106.768891</td><td>1</td></tr>
+        <tr><td>2025</td><td>JL. NEDERLANDSE INTERNATIONAL NO 14 TITIK LOKASI LAPANGAN</td><td>-6.2892828</td><td>106.8089504</td><td>1</td></tr>
+        <tr><td>2025</td><td>KANTOR KEL PETOGOGAN LT.3</td><td>-6.2442148</td><td>106.8135128</td><td>1</td></tr>
+        <tr><td>2025</td><td>JL RUKUN PEJATEN TIMUR PS.MINGGU JAKSEL LOKASI SDN PEJATEN TIMUR</td><td>-6.2834487</td><td>106.8550773</td><td>1</td></tr>
+        <tr><td>2025</td><td>KOTA ADM. JAKARTA SELATAN, RT.6/RW.1, PENGADEGAN, KEC. PANCORAN, KOTA KOTA ADM. JAKARTA SELATAN, DAERAH KHUSUS IBUKOTA JAKARTA 12770</td><td>-6.2507397</td><td>106.8612517</td><td>1</td></tr>
+        <tr><td>2025</td><td>JL. SENSUS NO 1 TITIK LOKASI BANTARAN SUNGAI CILIWUNG DEKAT GUDANG PELURU</td><td>-6.231194</td><td>106.863806</td><td>1</td></tr>
+        <tr><td>2025</td><td>RT. 10/RW. 1, KP. MELAYU, KECAMATAN JATINEGARA, KOTA KOTA ADM. JAKARTA TIMUR, DAERAH KHUSUS IBUKOTA JAKARTA 13320 (BELAKANG RS. HERMINA)</td><td>-6.2207737</td><td>106.8642746</td><td>1</td></tr>
+        <tr><td>2025</td><td>JL.DEWI SARTIKA CAWANG JAKTIM</td><td>-6.239876</td><td>106.865396</td><td>1</td></tr>
+        <tr><td>2025</td><td>JL. PUSKESMAS NO 58 HALIM JAKTIM TITIK LOKASI DEPAN MASJID JAMI AL-IKHLAS</td><td>-6.2612794</td><td>106.8811254</td><td>1</td></tr>
+        <tr><td>2025</td><td>JL. SUNTER JAYA IV A, RT.3/RW.4, CIPINANG MELAYU, KEC. MAKASAR, KOTA KOTA ADM. JAKARTA TIMUR, DAERAH KHUSUS IBUKOTA JAKARTA 13620</td><td>-6.2412821</td><td>106.8903157</td><td>1</td></tr>
+      </tbody>
+    </table>
+  
+  </body>
+</html >
