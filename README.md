@@ -110,13 +110,13 @@ Bobot kriteria tidak ditentukan secara subjektif, melainkan dihitung secara obje
 
 ## 📊 K-Means Clustering (Tahap Selanjutnya)
 
-* **Fitur Input:** `skor_topsis` (output Stage TOPSIS) dipadukan dengan 3 fitur pendukung (`tinggi_max_cm`, `lama_hari_mean`, `kepadatan_jiwa_km2`).
-* **Jumlah Klaster Optimal:** $k = 4$ (Klaster 0: Prioritas Sangat Tinggi / Kritis $\dots$ Klaster 3: Prioritas Rendah).
-* **Evaluasi Klaster:**
-  * Silhouette Score: 0,339
-  * Davies-Bouldin Index: 0,953
-  * Calinski-Harabasz Index: 31,4
-  * Stabilitas ARI (Seed / Bootstrap): 0,99 / 0,86
+* **Fitur Input:** `skor_topsis` (output Stage TOPSIS) dipadukan dengan `jiwa_per_1000` (dampak ke warga) dan `kepadatan_jiwa_km2` (paparan penduduk); log1p + standardisasi (z-score).
+* **Jumlah Klaster:** $k = 4$ (Klaster 0: Prioritas Tinggi ... Klaster 3: Rendah), dipilih dari sweep k=2..7 dengan aturan kelayakan (ukuran klaster ≥ 5 dan ≤ 40% data, Spearman klaster-vs-rank ≥ 0,8). Silhouette k=4 (0,354) mendekati k=6 (0,378) sebagai yang tertinggi di antara k yang lolos.
+* **Evaluasi Klaster** (angka di bawah dihasilkan `03_kmeans.ipynb`):
+  * Silhouette Score: 0,351 · Davies-Bouldin Index: 0,880 · Calinski-Harabasz Index: 27,0
+  * Stabilitas ARI (Seed / Bootstrap): 0,91 / 0,74
+  * Konsistensi dengan TOPSIS: Spearman(klaster, rank) = 0,90; 10/10 kecamatan top-10 TOPSIS berada di klaster 0
+  * ARI vs Ward = 0,61, vs GMM = 0,54 (kesepakatan sedang; kecamatan batas: Grogol Petamburan, Cempaka Putih, Kebayoran Lama, Cakung, Kelapa Gading)
 
 ---
 
