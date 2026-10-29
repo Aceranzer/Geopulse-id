@@ -51,19 +51,32 @@ Metode **TOPSIS (*Technique for Order of Preference by Similarity to Ideal Solut
 Penentuan kriteria didasarkan pada kerangka baku mitigasi bencana internasional:
 $$\text{Risiko Banjir} = \frac{\text{Bahaya (Hazard)} \times \text{Kerentanan (Vulnerability)}}{\text{Kapasitas (Capacity)}}$$
 
-### 2. Penetapan Kriteria & Arah (Benefit vs Cost)
-| Kriteria | Dimensi | Tipe | Alasan & Arah Optimasi |
-| :--- | :---: | :---: | :--- |
-| `frek_tahun_banjir` | Bahaya | **Benefit** | Semakin sering banjir tahunan, semakin tinggi prioritas mitigasi. |
-| `bulan_banjir_per_tahun` | Bahaya | **Benefit** | Semakin banyak bulan basah banjir, semakin darurat. |
-| `kejadian_per_tahun` | Bahaya | **Benefit** | Frekuensi kejadian tahunan yang tinggi menuntut intervensi. |
-| `tinggi_max_cm` | Bahaya | **Benefit** | Genangan yang tinggi menimbulkan keparahan fisik yang lebih besar. |
-| `lama_hari_mean` | Bahaya | **Benefit** | Durasi genangan yang lama melumpuhkan aktivitas ekonomi warga. |
-| `jiwa_per_1000` | Bahaya | **Benefit** | Dampak korban jiwa/pengungsi per 1.000 warga (urgensi kemanusiaan). |
-| `kepadatan_jiwa_km2` | Kerentanan | **Benefit** | Semakin padat penduduk, semakin banyak jiwa yang terpapar risiko. |
-| `n_alat_dini` | Kapasitas | **Cost** | Semakin banyak EWS yang terpasang, wilayah tersebut semakin siap (risiko termitigasi). |
+### 2. Daftar Alternatif (42 Kecamatan Daratan DKI Jakarta)
+Analisis dilakukan pada **42 alternatif kecamatan** di 5 wilayah kota administrasi (Kepulauan Seribu dipisahkan agar fokus pada dinamika daratan Jakarta):
 
-### 3. Metode Pembobotan Objektif: Shannon Entropy
+| Wilayah Kota | Jumlah | Daftar Alternatif Kecamatan |
+| :--- | :---: | :--- |
+| **Jakarta Barat** | 8 | Cengkareng, Grogol Petamburan, Kali Deres, Kebon Jeruk, Kembangan, Palmerah, Taman Sari, Tambora |
+| **Jakarta Pusat** | 8 | Cempaka Putih, Gambir, Johar Baru, Kemayoran, Menteng, Sawah Besar, Senen, Tanah Abang |
+| **Jakarta Selatan** | 10 | Cilandak, Jagakarsa, Kebayoran Baru, Kebayoran Lama, Mampang Prapatan, Pancoran, Pasar Minggu, Pesanggrahan, Setia Budi, Tebet |
+| **Jakarta Timur** | 10 | Cakung, Cipayung, Ciracas, Duren Sawit, Jatinegara, Kramat Jati, Makasar, Matraman, Pasar Rebo, Pulo Gadung |
+| **Jakarta Utara** | 6 | Cilincing, Kelapa Gading, Koja, Pademangan, Penjaringan, Tanjung Priok |
+
+### 3. Penetapan Kriteria & Arah (Benefit vs Cost)
+Terdapat **8 kriteria** yang mencakup 3 pilar risiko bencana:
+
+| No | Kode Kriteria | Dimensi | Tipe | Satuan | Alasan & Arah Optimasi |
+| :---: | :--- | :---: | :---: | :---: | :--- |
+| 1 | `frek_tahun_banjir` | Bahaya | **Benefit** | Proporsi (0–1) | Semakin sering banjir tahunan, semakin tinggi prioritas mitigasi. |
+| 2 | `bulan_banjir_per_tahun` | Bahaya | **Benefit** | Bulan/tahun | Semakin banyak bulan basah banjir, semakin darurat. |
+| 3 | `kejadian_per_tahun` | Bahaya | **Benefit** | Kejadian/tahun | Frekuensi kejadian tahunan yang tinggi menuntut intervensi. |
+| 4 | `tinggi_max_cm` | Bahaya | **Benefit** | cm | Genangan yang tinggi menimbulkan keparahan fisik yang lebih besar. |
+| 5 | `lama_hari_mean` | Bahaya | **Benefit** | Hari | Durasi genangan yang lama melumpuhkan aktivitas ekonomi warga. |
+| 6 | `jiwa_per_1000` | Bahaya | **Benefit** | Jiwa/1.000 pddk | Dampak korban jiwa/pengungsi per 1.000 warga (urgensi kemanusiaan). |
+| 7 | `kepadatan_jiwa_km2` | Kerentanan | **Benefit** | Jiwa/km² | Semakin padat penduduk, semakin banyak jiwa yang terpapar risiko. |
+| 8 | `n_alat_dini` | Kapasitas | **Cost** | Unit EWS | Semakin minim alat EWS terpasang, semakin darurat butuh penambahan (Cost). |
+
+### 4. Metode Pembobotan Objektif: Shannon Entropy
 Bobot kriteria tidak ditentukan secara subjektif, melainkan dihitung secara objektif menggunakan dispersi informasi alami data:
 1. Normalisasi matriks probabilitas: $p_{ij} = \frac{x_{ij}}{\sum_{i=1}^m x_{ij}}$
 2. Entropi kriteria ($k = \frac{1}{\ln(m)}$): $e_j = -k \sum_{i=1}^m p_{ij} \ln(p_{ij})$
@@ -72,7 +85,7 @@ Bobot kriteria tidak ditentukan secara subjektif, melainkan dihitung secara obje
 
 *Sebagai pembanding keandalan (analisis sensitivitas), disiapkan juga skenario **Equal Weights** ($w_j = 1/n$) dan **Expert Weights**.*
 
-### 4. Lima Langkah Matematis Algoritma TOPSIS Murni
+### 5. Lima Langkah Matematis Algoritma TOPSIS Murni
 1. **Normalisasi Vektor ($r_{ij}$):**
    $$r_{ij} = \frac{x_{ij}}{\sqrt{\sum_{k=1}^m x_{kj}^2}}$$
 2. **Matriks Ternormalisasi Terbobot ($v_{ij}$):**
