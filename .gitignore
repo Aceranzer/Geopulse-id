@@ -1,8 +1,4 @@
-/Data/figures
 /Data/processed
 /Data/interim
 /Data/Raw/*_files/
 src/__pycache__/
-clustered_result.csv
-dki_master.csv
-topsis_result.csv
