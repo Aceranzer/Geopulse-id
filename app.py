@@ -10,7 +10,7 @@ from flask import Flask, jsonify, render_template, request
 import config
 from src.pipeline import (CLUSTER_COLORS, CRIT_COLS, CRIT_TYPES, CRITERIA, K_FINAL,
                           SILHOUETTE_BATAS, W_EXPERT)
-from src.recommend import rekomendasi
+from src.recommend import CATATAN_VALIDASI, rekomendasi
 from src.topsis import shannon_entropy_weights, topsis
 
 app = Flask(__name__)
@@ -67,7 +67,7 @@ def ringkasan():
         "n_kecamatan": len(df),
         "n_kota": df.wilayah.nunique(),
         "n_prioritas": int((df.cluster_id == 0).sum()),
-        "jiwa_per_tahun": int(round(df.jiwa_per_tahun.sum())),
+        "kejadian_rata": df.kejadian_per_tahun.mean(),
         "skor_min": df.skor_topsis.min(),
         "skor_maks": df.skor_topsis.max(),
         "n_tahun": len(tahun),
@@ -91,7 +91,7 @@ def klaster():
 def komparasi():
     # rekomendasi per klaster; None = belum ditetapkan tim
     rek = {i: rekomendasi(i) for i in range(K_FINAL)}
-    return render_template("komparasi.html", colors=CLUSTER_COLORS, rek=rek)
+    return render_template("komparasi.html", colors=CLUSTER_COLORS, rek=rek, catatan=CATATAN_VALIDASI)
 
 
 @app.route("/api/kecamatan")

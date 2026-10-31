@@ -5,6 +5,9 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     #peta { border-radius: 6px; }
+    .legenda-topo { background: rgba(255,255,255,.9); padding: 6px 8px; border-radius: 4px; font-size: 10px; width: 150px; }
+    .legenda-topo .bar { height: 8px; border-radius: 2px; background: linear-gradient(to right, #f2f2f2, #8a8a8a); border: 1px solid #bbb; }
+    .legenda-topo .teks { display: flex; justify-content: space-between; margin-top: 2px; }
     .legend-klaster { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; font-size: 12px; }
     .legend-klaster i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
     .tools { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
@@ -30,9 +33,9 @@
       <div class="foot"><span>Klaster 0 (K-Means)</span></div>
     </div>
     <div class="card stat">
-      <div class="label">Estimasi Jiwa Terdampak</div>
-      <div class="num">{{ "{:,}".format(stats.jiwa_per_tahun).replace(",", ".") }}</div>
-      <div class="foot"><span>jiwa per tahun (rata-rata), {{ stats.n_tahun }} tahun data: {{ stats.rentang_tahun }}</span></div>
+      <div class="label">Rata-rata Kejadian/Tahun</div>
+      <div class="num">{{ "%.1f"|format(stats.kejadian_rata) }}</div>
+      <div class="foot"><span>kejadian banjir per kecamatan per tahun; {{ stats.n_tahun }} tahun data: {{ stats.rentang_tahun }}</span></div>
     </div>
     <div class="card stat">
       <div class="label">Indeks Risiko Regional</div>

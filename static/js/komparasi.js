@@ -26,7 +26,7 @@ function ringkas(r) {
 function tindakan(r) {
   const daftar = REK[r.cluster_id];
   const isi = daftar
-    ? `<ul class="tindakan">${daftar.map(t => `<li>${esc(t)}</li>`).join("")}</ul>`
+    ? `<ul class="tindakan">${daftar.map(t => `<li>${esc(t.tindakan)} <span class="muted">(prioritas ${esc(t.prioritas)})</span></li>`).join("")}</ul>`
     : '<div class="placeholder">Rekomendasi belum ditetapkan.</div>';
   return `<div><b>${esc(r.kecamatan)}</b> <span class="pill c${r.cluster_id}">${esc(r.cluster_name)}</span>${isi}</div>`;
 }
