@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Klaster · Geopulse-ID{% endblock %}
+
+{% block head %}
+  <style>
+    .klaster-card { border-left-width: 6px; }
+    .klaster-card .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .klaster-card .n { font-size: 22px; font-weight: 700; }
+    .mini th, .mini td { padding: 4px 6px; font-size: 11px; text-align: right; }
+    .mini th:first-child, .mini td:first-child { text-align: left; }
+    .mini th { text-transform: none; }
+    .naik { color: #8b0000; } .turun { color: #2f7d4f; }
+    .anggota { margin: 12px 0 0; padding: 0; list-style: none; font-size: 12px; columns: 2; }
+    .anggota li { margin-bottom: 2px; break-inside: avoid; }
+    .batas { color: #b8860b; font-weight: 600; }
+    .chart-box { position: relative; height: 260px; }
+    .section { margin-top: 24px; }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <h1 style="font-size:22px; margin:0 0 4px;">Klaster Prioritas</h1>
+  <p class="muted" style="margin:0 0 16px; color:var(--ink-soft);">
+    K-Means (k = {{ k_final }}) atas skor TOPSIS, jiwa terdampak per 1000 penduduk, dan kepadatan penduduk.
+    Klaster diurutkan dari skor TOPSIS rata-rata tertinggi (0) ke terendah.
+  </p>
+
+  <div class="grid grid-2" id="kartu"></div>
+  <p class="muted" style="margin-top:12px;">
+    <span class="batas">▲</span> = kecamatan batas (silhouette &lt; {{ batas }}): posisinya di klaster ini kurang pasti
+    dan dekat dengan klaster lain. Tanda panah pada tabel mini membandingkan rata-rata klaster dengan rata-rata 42 kecamatan
+    (merah = lebih berisiko, hijau = kurang berisiko; untuk alat peringatan dini, makin sedikit makin berisiko).
+  </p>
+
+  <div class="card section">
+    <h2>Pemilihan jumlah klaster (k = 2 sampai 7)</h2>
+    <div class="muted" id="catatan-k"></div>
+    <div class="grid grid-2" style="margin-top:12px;">
+      <div><div class="muted">Elbow: inertia (makin rendah makin rapat)</div><div class="chart-box"><canvas id="elbow"></canvas></div></div>
+      <div><div class="muted">Silhouette (makin tinggi makin terpisah)</div><div class="chart-box"><canvas id="sil"></canvas></div></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script>window.BATAS = {{ batas }};</script>
+  <script src="{{ url_for('static', filename='js/klaster.js') }}"></script>
+{% endblock %}

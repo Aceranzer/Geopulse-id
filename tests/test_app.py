@@ -34,6 +34,32 @@ def main():
     nama_geo = {norm(f["properties"]["kecamatan"]) for f in geo["features"]}
     assert nama_geo == {norm(x["kecamatan"]) for x in rows}, "nama GeoJSON dan CSV tidak cocok"
     print("API: 42 baris, ukuran klaster", ukuran, "| 42/42 poligon cocok dengan CSV")
+    # Fase 3: klaster, sweep, kriteria, komparasi
+    d = c.get("/api/klaster").get_json()
+    assert sum(x["n"] for x in d["klaster"]) == 42
+    for x in d["klaster"]:
+        g = t.merge(k[["kecamatan", "cluster_id", "silhouette_sample"]], on="kecamatan")
+        g = g[g.cluster_id == x["cluster_id"]]
+        assert abs(x["rata"]["tinggi_max_cm"] - g.tinggi_max_cm.mean()) < 1e-9
+        assert x["n"] == len(g)
+        assert sum(m["batas"] for m in x["anggota"]) == int((g.silhouette_sample < 0.1).sum())
+    n_batas = sum(m["batas"] for x in d["klaster"] for m in x["anggota"])
+    print("klaster:", [x["n"] for x in d["klaster"]], "| kecamatan batas:", n_batas)
+
+    sw = c.get("/api/sweep").get_json()
+    assert [r["k"] for r in sw["sweep"]] == [2, 3, 4, 5, 6, 7] and sw["k_final"] == 4
+
+    kr = c.get("/api/kriteria").get_json()
+    assert len(kr["kriteria"]) == 8 and [x["type"] for x in kr["kriteria"]].count("cost") == 1
+    for nama, w in kr["bobot"].items():
+        assert abs(sum(w) - 1) < 1e-9, nama
+    assert len(kr["data"]) == 42
+    print("bobot entropi:", [round(x, 3) for x in kr["bobot"]["entropi"]])
+
+    for url in ["/klaster", "/komparasi"]:
+        assert c.get(url).status_code == 200, url
+    # aturan rekomendasi belum ditetapkan tim -> halaman mengirim null (placeholder), bukan teks karangan
+    assert "window.REKOMENDASI" in c.get("/komparasi").get_data(as_text=True)
     print("LULUS")
 
 
