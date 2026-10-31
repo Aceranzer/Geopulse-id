@@ -3,14 +3,15 @@
 import json
 import re
 
+import numpy as np
 import pandas as pd
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 
 import config
-from src.pipeline import (CLUSTER_COLORS, CRIT_COLS, CRITERIA, K_FINAL, SILHOUETTE_BATAS,
-                          W_EXPERT)
+from src.pipeline import (CLUSTER_COLORS, CRIT_COLS, CRIT_TYPES, CRITERIA, K_FINAL,
+                          SILHOUETTE_BATAS, W_EXPERT)
 from src.recommend import rekomendasi
-from src.topsis import shannon_entropy_weights
+from src.topsis import shannon_entropy_weights, topsis
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = config.SECRET_KEY or "dev-only-tidak-untuk-produksi"
@@ -116,6 +117,36 @@ def api_kriteria():
     kriteria = [{"kolom": k, **v} for k, v in CRITERIA.items()]
     data = json.loads(t[["kecamatan"] + CRIT_COLS].to_json(orient="records"))
     return jsonify({"kriteria": kriteria, "bobot": bobot(), "data": data})
+
+
+PRESET = {"entropi", "sama", "pakar", "kustom"}
+
+
+@app.route("/api/simulasi", methods=["POST"])
+def api_simulasi():
+    """Hitung ulang TOPSIS dengan bobot dari pengguna; peringkat bawaan = bobot entropi (topsis_result.csv)."""
+    payload = request.get_json(silent=True) or {}
+    preset = payload.get("preset", "kustom")
+    w = payload.get("bobot")
+    if preset not in PRESET:
+        return jsonify({"galat": "preset tidak dikenal"}), 400
+    if not isinstance(w, list) or len(w) != len(CRIT_COLS) or not all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in w):
+        return jsonify({"galat": f"bobot harus berupa {len(CRIT_COLS)} angka"}), 400
+    w = np.array(w, dtype=float)
+    if not np.isfinite(w).all() or (w < 0).any() or w.sum() <= 0:
+        return jsonify({"galat": "bobot harus angka tidak negatif dengan total lebih dari 0"}), 400
+    w = w / w.sum()
+
+    t = pd.read_csv(config.TOPSIS_CSV)
+    X = t[CRIT_COLS].values.astype(float)
+    skor = topsis(X, w, CRIT_TYPES)[0]
+    rank_baru = pd.Series(skor).rank(ascending=False).astype(int).values
+    hasil = pd.DataFrame({"kecamatan": t.kecamatan, "wilayah": t.wilayah, "rank_bawaan": t.rank_topsis,
+                          "rank_baru": rank_baru, "skor_baru": skor})
+    hasil["delta"] = hasil.rank_bawaan - hasil.rank_baru          # positif = naik peringkat
+    hasil["selisih_mutlak"] = hasil.delta.abs()
+    hasil = hasil.sort_values(["selisih_mutlak", "rank_baru"], ascending=[False, True]).drop(columns="selisih_mutlak")
+    return jsonify({"preset": preset, "bobot": w.tolist(), "hasil": json.loads(hasil.to_json(orient="records"))})
 
 
 @app.route("/api/klaster")
