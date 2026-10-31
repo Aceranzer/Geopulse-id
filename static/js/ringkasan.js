@@ -19,19 +19,38 @@ const KOLOM = [
 let data = [], urut = { key: "rank_topsis", asc: true }, halaman = 1;
 
 function buatPeta(geo) {
-  const peta = L.map("peta", { scrollWheelZoom: false });
+  const peta = L.map("peta", { scrollWheelZoom: false, center: [-6.2088, 106.8456], zoom: 11 });
+  const atribusi = "Basemap &amp; hillshade: Esri, HERE, Garmin, © OpenStreetMap contributors";
+
+  // urutan lapisan: basemap -> hillshade -> choropleth
+  L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", { maxZoom: 16, attribution: atribusi }).addTo(peta);
+  const hillshade = L.tileLayer("https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",
+    { opacity: 0.45, maxZoom: 16 }).addTo(peta);
+
   const byKey = Object.fromEntries(data.map(r => [norm(r.kecamatan), r]));
-  const layer = L.geoJSON(geo, {
+  const klaster = L.geoJSON(geo, {
     style: f => {
       const r = byKey[norm(f.properties.kecamatan)];
-      return { fillColor: r ? WARNA[r.cluster_id] : "#cccccc", fillOpacity: 0.85, color: "#ffffff", weight: 1 };
+      return { fillColor: r ? WARNA[r.cluster_id] : "#cccccc", fillOpacity: 0.6, color: "#ffffff", weight: 1 };
     },
     onEachFeature: (f, l) => {
       const r = byKey[norm(f.properties.kecamatan)];
       if (r) l.bindTooltip(`<b>${esc(r.kecamatan)}</b><br>Skor ${r.skor_topsis.toFixed(3)} · ${esc(r.cluster_name)}`);
     },
   }).addTo(peta);
-  peta.fitBounds(layer.getBounds());
+
+  L.control.layers(null, { "Topografi (hillshade)": hillshade, "Klaster prioritas": klaster }, { collapsed: false }).addTo(peta);
+
+  const legendaTopo = L.control({ position: "bottomright" });
+  legendaTopo.onAdd = () => {
+    const d = L.DomUtil.create("div", "legenda-topo");
+    d.innerHTML = '<div class="bar"></div><div class="teks"><span>Dataran rendah</span><span>Dataran tinggi</span></div>';
+    return d;
+  };
+  legendaTopo.addTo(peta);
+  // legenda ikut tampil/hilang bersama lapisan hillshade
+  peta.on("overlayremove", e => { if (e.layer === hillshade) legendaTopo.getContainer().style.display = "none"; });
+  peta.on("overlayadd", e => { if (e.layer === hillshade) legendaTopo.getContainer().style.display = ""; });
 
   const nama = {};
   data.forEach(r => nama[r.cluster_id] = r.cluster_name);
