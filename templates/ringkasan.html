@@ -15,6 +15,16 @@
     .table th.sortable { cursor: pointer; white-space: nowrap; }
     .table td.num, .table th.num { text-align: right; }
     .section { margin-top: 24px; }
+    tr.klik { cursor: pointer; } tr.klik:hover { background: #e4e4e4 !important; }
+    #detail { border: 1px solid var(--ink); border-radius: var(--radius); padding: 24px; width: min(560px, 94vw); max-height: 90vh; }
+    #detail::backdrop { background: rgba(0,0,0,.35); }
+    #detail h3 { font-size: 13px; margin: 16px 0 4px; }
+    .detail-ringkas { display: flex; gap: 12px; margin: 12px 0; }
+    .detail-ringkas > div { flex: 1; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+    .detail-ringkas span { display: block; font-size: 11px; } .detail-ringkas b { font-size: 16px; }
+    #detail .table td { padding: 6px 4px; } #detail ul { padding-left: 18px; font-size: 12px; }
+    .placeholder { border: 1px dashed var(--ink-soft); border-radius: 6px; padding: 10px; color: var(--ink-soft); font-size: 12px; }
+    #detail-tutup { float: right; }
   </style>
 {% endblock %}
 
@@ -85,7 +95,16 @@
 {% endblock %}
 
 {% block scripts %}
+  <dialog id="detail" class="no-print">
+    <button class="btn" id="detail-tutup" type="button" style="padding:4px 10px;">Tutup</button>
+    <div id="detail-isi"></div>
+  </dialog>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>window.KLASTER_WARNA = {{ colors|tojson }};</script>
+  <script>
+    window.KLASTER_WARNA = {{ colors|tojson }};
+    window.REKOMENDASI = {{ rek|tojson }};
+    window.CATATAN = {{ catatan|tojson }};
+    window.KRITERIA = {{ kriteria|tojson }};
+  </script>
   <script src="{{ url_for('static', filename='js/ringkasan.js') }}"></script>
 {% endblock %}

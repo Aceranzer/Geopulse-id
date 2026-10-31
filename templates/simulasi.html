@@ -39,6 +39,10 @@
     <h2>Dinamika Pergeseran Peringkat</h2>
     <div class="muted" style="margin-bottom:8px;">Dibandingkan dengan peringkat bawaan (bobot entropi); diurutkan menurut perubahan terbesar.</div>
     <div id="ringkasan"></div>
+    <form id="form-pdf" method="post" action="/ekspor/simulasi.pdf" target="_blank" class="no-print" style="margin-bottom:12px;">
+      <input type="hidden" name="payload" id="payload-pdf">
+      <button class="btn" type="submit">Unduh hasil simulasi (PDF)</button>
+    </form>
     <div style="overflow-x:auto;">
       <table class="table" id="tabel">
         <thead><tr><th>Kecamatan</th><th>Kota</th><th class="num">Rank bawaan</th><th class="num">Rank baru</th><th class="num">Skor baru</th><th>Perubahan</th></tr></thead>

@@ -7,3 +7,4 @@
 @media (max-width: 1100px) { .peta-prioritas { grid-template-columns: 1fr; } }
 
 @media (max-width: 1100px) { .container, .topbar .container { padding: 0 16px; } }
+a.btn { text-decoration: none; color: var(--primary-ink); }

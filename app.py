@@ -2,10 +2,11 @@
 
 import json
 import re
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, Response, abort, jsonify, redirect, render_template, request, url_for
 
 import config
 from src.pipeline import (CLUSTER_COLORS, CLUSTER_NAMES, CRIT_COLS, CRIT_TYPES, CRITERIA, K_FINAL,
@@ -55,9 +56,39 @@ def rentang_tahun(tahun):
     return ", ".join(bagian)
 
 
+def slugify(nama):
+    """KEBON JERUK -> kebon-jeruk (dipakai di URL ekspor)."""
+    return re.sub(r"[^a-z0-9]+", "-", str(nama).lower()).strip("-")
+
+
+def angka(v):
+    """Format angka gaya Indonesia: 20455.3 -> 20.455 ; 3.1337 -> 3,13."""
+    s = f"{v:,.0f}" if abs(v) >= 100 else f"{v:,.2f}"
+    return s.replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+app.jinja_env.filters["angka"] = angka
+# CSS PDF disisipkan inline agar WeasyPrint tidak perlu mengunduh berkas dari server yang sama (bisa deadlock di worker tunggal)
+app.jinja_env.globals["pdf_css"] = lambda: (config.BASE_DIR / "static" / "css" / "pdf.css").read_text(encoding="utf-8")
+
+
 @app.context_processor
 def inject_layout():
     return {"nav": NAV}
+
+
+def versi_data():
+    with open(config.METRICS_JSON, encoding="utf-8") as f:
+        return json.load(f)["timestamp"].replace("T", " ")
+
+
+def render_pdf(html, base_url):
+    """HTML -> bytes PDF dengan WeasyPrint; None jika WeasyPrint/pustaka sistemnya tidak tersedia."""
+    try:
+        from weasyprint import HTML
+    except (ImportError, OSError):      # OSError: pustaka Pango/GTK tidak ditemukan (mis. di Windows)
+        return None
+    return HTML(string=html, base_url=base_url).write_pdf()
 
 
 @app.route("/")
@@ -74,8 +105,10 @@ def ringkasan():
         "n_tahun": len(tahun),
         "rentang_tahun": rentang_tahun(tahun),
     }
+    rek = {i: rekomendasi(i) for i in range(K_FINAL)}
     return render_template("ringkasan.html", stats=stats, top3=df.head(3).to_dict("records"),
-                           colors=CLUSTER_COLORS)
+                           colors=CLUSTER_COLORS, rek=rek, catatan=CATATAN_VALIDASI,
+                           kriteria=[{"kolom": k, **v} for k, v in CRITERIA.items()])
 
 
 @app.route("/metodologi")
@@ -117,7 +150,8 @@ def komparasi():
 @app.route("/api/kecamatan")
 def api_kecamatan():
     df = load_table()
-    kolom = ["rank_topsis", "kecamatan", "wilayah", "skor_topsis", "cluster_id", "cluster_name",
+    df["slug"] = df.kecamatan.map(slugify)
+    kolom = ["rank_topsis", "kecamatan", "slug", "wilayah", "skor_topsis", "cluster_id", "cluster_name",
              "silhouette_sample", "jiwa_per_tahun"] + list(CRITERIA)
     kolom = list(dict.fromkeys(kolom))
     return jsonify(json.loads(df[kolom].to_json(orient="records")))
@@ -142,19 +176,15 @@ def api_kriteria():
 PRESET = {"entropi", "sama", "pakar", "kustom"}
 
 
-@app.route("/api/simulasi", methods=["POST"])
-def api_simulasi():
-    """Hitung ulang TOPSIS dengan bobot dari pengguna; peringkat bawaan = bobot entropi (topsis_result.csv)."""
-    payload = request.get_json(silent=True) or {}
-    preset = payload.get("preset", "kustom")
-    w = payload.get("bobot")
+def hitung_simulasi(w, preset):
+    """Validasi bobot lalu hitung ulang TOPSIS. Mengembalikan (bobot ternormalisasi, tabel hasil); ValueError jika tidak valid."""
     if preset not in PRESET:
-        return jsonify({"galat": "preset tidak dikenal"}), 400
+        raise ValueError("preset tidak dikenal")
     if not isinstance(w, list) or len(w) != len(CRIT_COLS) or not all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in w):
-        return jsonify({"galat": f"bobot harus berupa {len(CRIT_COLS)} angka"}), 400
+        raise ValueError(f"bobot harus berupa {len(CRIT_COLS)} angka")
     w = np.array(w, dtype=float)
     if not np.isfinite(w).all() or (w < 0).any() or w.sum() <= 0:
-        return jsonify({"galat": "bobot harus angka tidak negatif dengan total lebih dari 0"}), 400
+        raise ValueError("bobot harus angka tidak negatif dengan total lebih dari 0")
     w = w / w.sum()
 
     t = pd.read_csv(config.TOPSIS_CSV)
@@ -166,7 +196,87 @@ def api_simulasi():
     hasil["delta"] = hasil.rank_bawaan - hasil.rank_baru          # positif = naik peringkat
     hasil["selisih_mutlak"] = hasil.delta.abs()
     hasil = hasil.sort_values(["selisih_mutlak", "rank_baru"], ascending=[False, True]).drop(columns="selisih_mutlak")
+    return w, hasil
+
+
+@app.route("/api/simulasi", methods=["POST"])
+def api_simulasi():
+    """Hitung ulang TOPSIS dengan bobot dari pengguna; peringkat bawaan = bobot entropi (topsis_result.csv)."""
+    payload = request.get_json(silent=True) or {}
+    preset = payload.get("preset", "kustom")
+    try:
+        w, hasil = hitung_simulasi(payload.get("bobot"), preset)
+    except ValueError as e:
+        return jsonify({"galat": str(e)}), 400
     return jsonify({"preset": preset, "bobot": w.tolist(), "hasil": json.loads(hasil.to_json(orient="records"))})
+
+
+NAMA_PRESET = {"entropi": "Entropi (bawaan)", "sama": "Sama rata", "pakar": "Pakar", "kustom": "Kustom"}
+
+
+def profil_kecamatan(slug):
+    """Data satu kecamatan untuk PDF/cetak; 404 jika slug tidak valid atau tidak ada di CSV."""
+    if not re.fullmatch(r"[a-z0-9-]+", slug):
+        abort(404)
+    df = load_table()
+    df["slug"] = df.kecamatan.map(slugify)
+    baris = df[df.slug == slug]
+    if baris.empty:
+        abort(404)
+    r = baris.iloc[0]
+    return {
+        "r": r, "n": len(df), "slug": slug,
+        "kriteria": [{"desc": v["desc"], "satuan": v["satuan"], "nilai": r[k], "tipe": v["type"]} for k, v in CRITERIA.items()],
+        "batas": bool(r.silhouette_sample < SILHOUETTE_BATAS),
+        "rekomendasi": rekomendasi(r.cluster_id), "catatan": CATATAN_VALIDASI,
+        "tanggal": datetime.now().strftime("%d-%m-%Y"), "versi": versi_data(),
+    }
+
+
+@app.route("/cetak/kecamatan/<slug>")
+def cetak_kecamatan(slug):
+    """Profil kecamatan sebagai halaman HTML siap cetak (cadangan jika PDF server tidak tersedia)."""
+    return render_template("pdf/kecamatan.html", auto_print=request.args.get("cetak") == "1", **profil_kecamatan(slug))
+
+
+@app.route("/ekspor/kecamatan/<slug>.pdf")
+def pdf_kecamatan(slug):
+    data = profil_kecamatan(slug)
+    pdf = render_pdf(render_template("pdf/kecamatan.html", auto_print=False, **data), request.url_root)
+    if pdf is None:   # WeasyPrint tidak tersedia: arahkan ke halaman cetak (Ctrl+P / Simpan sebagai PDF)
+        return redirect(url_for("cetak_kecamatan", slug=slug, cetak=1))
+    return Response(pdf, mimetype="application/pdf",
+                    headers={"Content-Disposition": f"attachment; filename=profil-{slug}.pdf"})
+
+
+def payload_simulasi():
+    """Payload dari JSON atau dari form (kolom 'payload' berisi JSON) -> (bobot, preset)."""
+    p = request.get_json(silent=True)
+    if p is None and request.form.get("payload"):
+        try:
+            p = json.loads(request.form["payload"])
+        except ValueError:
+            p = None
+    p = p if isinstance(p, dict) else {}
+    return p.get("bobot"), p.get("preset", "kustom")
+
+
+@app.route("/ekspor/simulasi.pdf", methods=["POST"])
+def pdf_simulasi():
+    bobot_mentah, preset = payload_simulasi()
+    try:
+        w, hasil = hitung_simulasi(bobot_mentah, preset)
+    except ValueError as e:
+        return jsonify({"galat": str(e)}), 400
+    konteks = {
+        "preset": NAMA_PRESET[preset], "hasil": hasil.to_dict("records"), "tanggal": datetime.now().strftime("%d-%m-%Y %H:%M"),
+        "bobot": [{"desc": v["desc"], "tipe": v["type"], "persen": float(w[i] * 100)} for i, v in enumerate(CRITERIA.values())],
+        "berubah": int((hasil.delta != 0).sum()), "versi": versi_data(),
+    }
+    pdf = render_pdf(render_template("pdf/simulasi.html", auto_print=False, **konteks), request.url_root)
+    if pdf is None:   # cadangan: kirim halaman cetak yang otomatis membuka dialog cetak
+        return render_template("pdf/simulasi.html", auto_print=True, **konteks)
+    return Response(pdf, mimetype="application/pdf", headers={"Content-Disposition": "attachment; filename=simulasi-bobot.pdf"})
 
 
 @app.route("/api/klaster")
