@@ -18,7 +18,7 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 # halaman yang sudah tersedia (menu header)
-NAV = [("/", "Ringkasan Eksekutif"), ("/klaster", "Klaster"), ("/komparasi", "Komparasi Wilayah")]
+NAV = [("/", "Ringkasan Eksekutif"), ("/simulasi", "Simulasi Bobot"), ("/komparasi", "Komparasi Wilayah"), ("/klaster", "Klaster")]
 
 
 def norm(nama):
@@ -74,6 +74,11 @@ def ringkasan():
     }
     return render_template("ringkasan.html", stats=stats, top3=df.head(3).to_dict("records"),
                            colors=CLUSTER_COLORS)
+
+
+@app.route("/simulasi")
+def simulasi():
+    return render_template("simulasi.html")
 
 
 @app.route("/klaster")
