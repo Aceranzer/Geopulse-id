@@ -2,7 +2,7 @@
 
 **Pengembangan Sistem Pendukung Keputusan Berbasis Dashboard Analitik dengan Integrasi K-Means Clustering dan TOPSIS untuk Prioritas Mitigasi Banjir di DKI Jakarta**
 
-* **Pipeline Utama:** Data Satu Data Jakarta $\longrightarrow$ Multi-Criteria Decision Making (TOPSIS) $\longrightarrow$ K-Means Clustering $\longrightarrow$ Dashboard Analitik Streamlit
+* **Pipeline Utama:** Data Satu Data Jakarta $\longrightarrow$ Multi-Criteria Decision Making (TOPSIS) $\longrightarrow$ K-Means Clustering $\longrightarrow$ Website Analitik (Flask)
 * **Cakupan Wilayah:** 42 Kecamatan daratan DKI Jakarta (Kabupaten Administrasi Kepulauan Seribu dipisahkan).
 
 ---
@@ -10,22 +10,28 @@
 ## 📁 Struktur Direktori
 
 ```text
-GeoPulse-id/
-├── Data/
-│   ├── Raw/                       # File mentah Satu Data Jakarta (.xls) & kecamatan.geojson
-│   ├── interim/                   # Data antara (geojson poligon, titik EWS, clean kelurahan)
-│   ├── dki_master.csv             # Master dataset gabungan 42 kecamatan (hasil 01_data.ipynb)
-│   └── topsis_result.csv          # Output skor preferensi & ranking TOPSIS (hasil 02_topsis.ipynb)
+Geopulse-id/
+├── data/
+│   ├── raw/                       # File mentah Satu Data Jakarta (.xls) & kecamatan.geojson
+│   ├── interim/                   # Data antara (diabaikan git; dibuat ulang oleh notebook)
+│   ├── dki_master.csv             # Master dataset 42 kecamatan (hasil 01_data.ipynb)
+│   ├── topsis_result.csv          # Skor & ranking TOPSIS (hasil 02_topsis.ipynb)
+│   ├── clustered_result.csv       # Klaster K-Means per kecamatan (hasil 03_kmeans.ipynb)
+│   ├── kecamatan_poly.geojson     # Poligon 42 kecamatan untuk peta website
+│   └── k_sweep.csv                # Metrik K-Means untuk k=2..7
 ├── notebook/
 │   ├── 01_data.ipynb              # Data understanding, pembersihan, agregasi & EDA
-│   ├── 02_topsis.ipynb            # Bobot Entropi Shannon, TOPSIS murni, sensitivitas & peta
-│   └── 03_kmeans.ipynb            # Klasterisasi K-Means k=4, evaluasi metrik & profil klaster
+│   ├── 02_topsis.ipynb            # Bobot Entropi Shannon, TOPSIS, sensitivitas & peta
+│   ├── 03_kmeans.ipynb            # Klasterisasi K-Means k=4, evaluasi & profil klaster
+│   └── 04_viz.ipynb               # Figur final (data/figures/final/)
 ├── src/
 │   ├── __init__.py
-│   └── topsis.py                  # Modul Python mandiri (reusable) fungsi TOPSIS & Entropi
-├── app.py                         # Aplikasi Dashboard Streamlit interaktif
+│   └── topsis.py                  # Fungsi TOPSIS & bobot Entropi Shannon
+├── requirements.txt
 └── README.md
 ```
+
+Website Flask (`app.py`, `templates/`, `static/`) sedang dibangun bertahap; lihat `PLAN` tim.
 
 ---
 
@@ -33,13 +39,17 @@ GeoPulse-id/
 
 ### 1. Instalasi Dependensi
 ```bash
-pip install pandas numpy scikit-learn geopandas matplotlib seaborn lxml jupyter ipykernel
+python -m venv .venv
+.venv\Scriptsctivate          # Linux/Mac: source .venv/bin/activate
+pip install -r requirements.txt
 ```
+Penting: nama folder `data/raw` huruf kecil semua (sistem Linux membedakan huruf besar/kecil).
 
 ### 2. Eksekusi Pipeline Berurutan
-1. Jalankan `notebook/01_data.ipynb` untuk memproses data mentah menjadi `Data/dki_master.csv`.
-2. Jalankan `notebook/02_topsis.ipynb` untuk menghitung skor risiko TOPSIS dan menghasilkan `Data/topsis_result.csv`.
+1. Jalankan `notebook/01_data.ipynb` untuk memproses data mentah menjadi `data/dki_master.csv`.
+2. Jalankan `notebook/02_topsis.ipynb` untuk menghitung skor risiko TOPSIS dan menghasilkan `data/topsis_result.csv`.
 3. Jalankan `notebook/03_kmeans.ipynb` untuk mengelompokkan kecamatan ke dalam 4 klaster prioritas mitigasi.
+4. Jalankan `notebook/04_viz.ipynb` untuk membuat figur final.
 
 ---
 
