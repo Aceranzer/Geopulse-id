@@ -1,0 +1,9 @@
+/* Penyesuaian tata letak di atas theme.css (theme.css tidak diubah). */
+.container { max-width: none; padding: 0 32px; }   /* selebar header */
+.topbar .container { max-width: none; padding: 0 32px; }   /* judul rapat ke kiri, menu rapat ke kanan */
+#peta { height: 560px; }
+.peta-prioritas { display: grid; grid-template-columns: 3fr 2fr; gap: 24px; margin-top: 24px; align-items: start; }
+.peta-prioritas .section { margin-top: 0; }
+@media (max-width: 1100px) { .peta-prioritas { grid-template-columns: 1fr; } }
+
+@media (max-width: 1100px) { .container, .topbar .container { padding: 0 16px; } }
