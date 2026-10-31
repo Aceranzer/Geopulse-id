@@ -17,12 +17,12 @@ def main():
     assert r.status_code == 200
     html = r.get_data(as_text=True)
     n_prior = int((k.cluster_id == 0).sum())
-    jiwa = f"{int(round(t.jiwa_per_tahun.sum())):,}".replace(",", ".")
-    assert f"{len(t)} Kecamatan" in html and f"{n_prior} Kecamatan" in html and jiwa in html
+    kejadian = f"{t.kejadian_per_tahun.mean():.1f}"
+    assert f"{len(t)} Kecamatan" in html and f"{n_prior} Kecamatan" in html and kejadian in html and "Rata-rata Kejadian/Tahun" in html and "Print Document" not in html
     assert f"{t.skor_topsis.min():.2f} – {t.skor_topsis.max():.2f}" in html
     top3 = k.sort_values("rank_topsis").head(3).kecamatan.str.title().tolist()
     assert all(n in html for n in top3), top3
-    print("kartu ringkasan cocok dengan CSV | 3 teratas:", top3, "| jiwa/tahun:", jiwa)
+    print("kartu ringkasan cocok dengan CSV | 3 teratas:", top3, "| kejadian rata-rata:", kejadian)
     print("rentang tahun:", re.search(r"tahun data: ([^<]+)<", html).group(1))
 
     rows = c.get("/api/kecamatan").get_json()
@@ -60,6 +60,13 @@ def main():
         assert c.get(url).status_code == 200, url
     # aturan rekomendasi belum ditetapkan tim -> halaman mengirim null (placeholder), bukan teks karangan
     assert "window.REKOMENDASI" in c.get("/komparasi").get_data(as_text=True)
+    # rekomendasi: tiap klaster punya daftar tindakan lengkap dengan sumber, dan halaman memuat catatan validasi
+    from src.recommend import CATATAN_VALIDASI, rekomendasi
+    for i in range(4):
+        daftar = rekomendasi(i)
+        assert daftar and all({"tindakan", "prioritas", "sumber"} <= set(x) for x in daftar), i
+    assert rekomendasi(99) is None
+    assert CATATAN_VALIDASI.split(";")[0] in c.get("/komparasi").get_data(as_text=True)
     print("LULUS")
 
 

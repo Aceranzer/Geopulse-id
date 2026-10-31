@@ -16,7 +16,6 @@
         {% for href, label in nav %}
           <a href="{{ href }}" {% if request.path == href %}class="active"{% endif %}>{{ label }}</a>
         {% endfor %}
-        <button class="btn" type="button" onclick="window.print()">Print Document A4</button>
       </nav>
     </div>
   </header>
