@@ -1,10 +1,15 @@
-// Simulasi bobot: hitung ulang TOPSIS di browser dan tampilkan pergeseran peringkat.
-const { topsis, rankDesc, normalisasi } = window.TopsisJS;
+// Simulasi bobot: bobot dikirim ke server (POST /api/simulasi), tabel pergeseran peringkat dari balasan server.
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const NAMA_PRESET = { entropi: "Entropi (bawaan)", sama: "Sama rata", pakar: "Pakar", kustom: "Kustom" };
-let kriteria, bobot, X, baris, mode = "entropi", raw = [];
+let kriteria, bobot, mode = "entropi", raw = [], timer = null, urutan = 0;
 const slidersEl = document.getElementById("sliders");
+
+// bobot mentah (nilai slider) -> berjumlah 1; hanya untuk label persen, server menormalisasi sendiri
+function normalisasi(r) {
+  const total = r.reduce((s, v) => s + v, 0);
+  return total > 0 ? r.map(v => v / total) : r.map(() => 1 / r.length);
+}
 
 function bobotAktif() {
   return mode === "kustom" ? normalisasi(raw) : bobot[mode];
@@ -19,7 +24,7 @@ function gambarSlider() {
       <b id="p${j}">${(w[j] * 100).toFixed(1)}%</b>
     </div>`).join("");
   if (mode === "kustom") kriteria.forEach((c, j) => document.getElementById("s" + j).addEventListener("input", e => {
-    raw[j] = +e.target.value; perbaruiPersen(); hitung();
+    raw[j] = +e.target.value; perbaruiPersen(); hitungTertunda();
   }));
 }
 
@@ -27,22 +32,36 @@ function perbaruiPersen() {
   normalisasi(raw).forEach((v, j) => document.getElementById("p" + j).textContent = (v * 100).toFixed(1) + "%");
 }
 
-function hitung() {
-  const skor = topsis(X, bobotAktif(), kriteria.map(c => c.type));
-  const rank = rankDesc(skor);
-  const hasil = baris.map((b, i) => ({ ...b, skorBaru: skor[i], rankBaru: rank[i], delta: b.rank_topsis - rank[i] }));
-  hasil.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta) || a.rankBaru - b.rankBaru);
+function hitungTertunda() {            // debounce 300 ms saat slider digeser
+  clearTimeout(timer);
+  timer = setTimeout(hitung, 300);
+}
 
+function tampilkan(hasil) {
   const berubah = hasil.filter(h => h.delta !== 0).length;
-  const top10Lama = new Set(hasil.filter(h => h.rank_topsis <= 10).map(h => h.kecamatan));
-  const top10Sama = hasil.filter(h => h.rankBaru <= 10 && top10Lama.has(h.kecamatan)).length;
+  const top10Sama = hasil.filter(h => h.rank_baru <= 10 && h.rank_bawaan <= 10).length;
   document.getElementById("ringkasan").innerHTML =
     `<b>${NAMA_PRESET[mode]}</b>: ${berubah} dari ${hasil.length} kecamatan berpindah peringkat; ${top10Sama} dari 10 kecamatan teratas bawaan tetap di 10 besar.`;
 
   document.querySelector("#tabel tbody").innerHTML = hasil.map(h => {
     const panah = h.delta > 0 ? `<span class="naik">▲ naik ${h.delta}</span>` : h.delta < 0 ? `<span class="turun">▼ turun ${-h.delta}</span>` : '<span class="muted">– tetap</span>';
-    return `<tr><td>${esc(h.kecamatan)}</td><td>${esc(h.wilayah)}</td><td class="num">${h.rank_topsis}</td><td class="num">${h.rankBaru}</td><td class="num">${h.skorBaru.toFixed(3)}</td><td>${panah}</td></tr>`;
+    return `<tr><td>${esc(h.kecamatan)}</td><td>${esc(h.wilayah)}</td><td class="num">${h.rank_bawaan}</td><td class="num">${h.rank_baru}</td><td class="num">${h.skor_baru.toFixed(3)}</td><td>${panah}</td></tr>`;
   }).join("");
+}
+
+function hitung() {
+  const saya = ++urutan;               // abaikan balasan lama jika ada permintaan yang lebih baru
+  fetch("/api/simulasi", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ preset: mode, bobot: bobotAktif() }),
+  })
+    .then(r => r.json().then(d => ({ ok: r.ok, d })))
+    .then(({ ok, d }) => {
+      if (saya !== urutan) return;
+      if (!ok) { document.getElementById("ringkasan").textContent = d.galat || "Perhitungan gagal."; return; }
+      tampilkan(d.hasil);
+    })
+    .catch(() => { if (saya === urutan) document.getElementById("ringkasan").textContent = "Server tidak dapat dihubungi."; });
 }
 
 function pilihMode(m) {
@@ -52,19 +71,8 @@ function pilihMode(m) {
   gambarSlider(); hitung();
 }
 
-Promise.all([fetch("/api/kriteria").then(r => r.json()), fetch("/api/kecamatan").then(r => r.json())]).then(([kr, kec]) => {
+fetch("/api/kriteria").then(r => r.json()).then(kr => {
   kriteria = kr.kriteria; bobot = kr.bobot;
-  const info = Object.fromEntries(kec.map(k => [k.kecamatan, k]));
-  X = kr.data.map(d => kriteria.map(c => d[c.kolom]));
-  baris = kr.data.map(d => ({ kecamatan: d.kecamatan, wilayah: info[d.kecamatan].wilayah, rank_topsis: info[d.kecamatan].rank_topsis }));
-
-  // pemeriksaan: hasil JS dengan bobot entropi harus sama dengan skor di topsis_result.csv
-  const skor = topsis(X, bobot.entropi, kriteria.map(c => c.type));
-  const selisih = Math.max(...kr.data.map((d, i) => Math.abs(skor[i] - info[d.kecamatan].skor_topsis)));
-  document.getElementById("verifikasi").textContent = selisih < 1e-6
-    ? `Verifikasi: perhitungan di browser sama dengan topsis_result.csv (selisih skor maksimum ${selisih.toExponential(1)}).`
-    : `Peringatan: perhitungan di browser berbeda dari topsis_result.csv (selisih ${selisih.toExponential(1)}).`;
-
   document.querySelectorAll(".preset").forEach(b => b.addEventListener("click", () => pilihMode(b.dataset.mode)));
   // tautan langsung: /simulasi?mode=pakar
   const awal = new URLSearchParams(location.search).get("mode");

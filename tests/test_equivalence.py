@@ -58,5 +58,8 @@ def main():
     print("LULUS: data rusak (41 kecamatan, nilai kosong, jiwa_per_1000 > 1000) ditolak")
 
 
+test_pipeline_sama_dengan_notebook = main   # agar pytest ikut menjalankannya
+
+
 if __name__ == "__main__":
     main()

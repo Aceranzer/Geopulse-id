@@ -63,5 +63,8 @@ def main():
     print("LULUS")
 
 
+test_halaman_dan_api = main   # agar pytest ikut menjalankannya
+
+
 if __name__ == "__main__":
     main()
