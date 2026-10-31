@@ -1,3 +1,4 @@
+Chart.defaults.font.size = 14;
 // Kartu klaster dan grafik pemilihan k pada halaman Klaster.
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmt = v => Math.abs(v) >= 100 ? v.toLocaleString("id-ID", { maximumFractionDigits: 0 }) : v.toLocaleString("id-ID", { maximumFractionDigits: 2 });
@@ -17,7 +18,7 @@ function kartu(k, rataSemua, kriteria) {
 
   return `<div class="card klaster-card" style="border-left-color:${k.warna}">
     <div class="head"><h3><span class="pill c${k.cluster_id}">${k.cluster_id} · ${esc(k.nama)}</span></h3><span class="n">${k.n} <span class="muted">kecamatan</span></span></div>
-    <div class="muted">Skor TOPSIS rata-rata ${k.rata.skor_topsis.toFixed(3)} (semua: ${rataSemua.skor_topsis.toFixed(3)})</div>
+    <div class="muted">Skor risiko rata-rata ${k.rata.skor_topsis.toFixed(3)} (semua ${rataSemua.skor_topsis.toFixed(3)})</div>
     <table class="table mini" style="margin-top:8px;"><thead><tr><th>Rata-rata kriteria</th><th>Klaster</th><th>Semua</th></tr></thead><tbody>${baris}</tbody></table>
     <ul class="anggota">${anggota}</ul>
   </div>`;
@@ -44,6 +45,6 @@ fetch("/api/sweep").then(r => r.json()).then(d => {
   const sil = Object.fromEntries(d.sweep.map(r => [r.k, r.silhouette]));
   const rentang = Math.max(...Object.values(sil)) - Math.min(...Object.values(sil));
   document.getElementById("catatan-k").textContent =
-    `Titik merah = k ${d.k_final} yang dipilih (silhouette ${sil[d.k_final].toFixed(3)}). Silhouette hampir datar sepanjang k = 2–7 ` +
-    `(selisih ${rentang.toFixed(3)}) dan tergolong lemah, jadi k = ${d.k_final} dipilih demi keterbacaan: empat tingkat prioritas yang mudah dipakai pengambil keputusan.`;
+    `Titik merah: k = ${d.k_final} (silhouette ${sil[d.k_final].toFixed(3)}). Nilainya hampir sama untuk semua k (selisih ${rentang.toFixed(3)}), ` +
+    `jadi k = ${d.k_final} dipilih agar mudah dibaca: empat tingkat prioritas.`;
 });
