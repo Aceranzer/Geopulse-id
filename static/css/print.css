@@ -1,7 +1,7 @@
 /* Cetak A4 (Ctrl+P). Dimuat dengan media="print", menimpa tema layar. */
 @page { size: A4; margin: 14mm; }
 
-body { font-size: 10.5px; color: #000; background: #fff; }
+body { font-size: 12px; color: #000; background: #fff; }
 .container, .topbar .container { max-width: none; padding: 0; }
 
 /* sembunyikan elemen interaktif */

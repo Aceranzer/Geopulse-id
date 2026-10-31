@@ -5,14 +5,14 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;"
 const id = n => n.toLocaleString("id-ID", { maximumFractionDigits: 0 });
 
 const KOLOM = [
-  { key: "rank_topsis", label: "Rank", num: true, fmt: v => v },
+  { key: "rank_topsis", label: "Peringkat", num: true, fmt: v => v },
   { key: "kecamatan", label: "Kecamatan", fmt: v => esc(v) },
   { key: "wilayah", label: "Kota", fmt: v => esc(v) },
-  { key: "skor_topsis", label: "Skor TOPSIS", num: true, fmt: v => v.toFixed(3) },
-  { key: "kejadian_per_tahun", label: "Frekuensi (kejadian/thn)", num: true, fmt: v => v.toFixed(1) },
-  { key: "tinggi_max_cm", label: "Tinggi Air (cm)", num: true, fmt: v => id(v) },
+  { key: "skor_topsis", label: "Skor risiko", num: true, fmt: v => v.toFixed(3) },
+  { key: "kejadian_per_tahun", label: "Banjir (kali/thn)", num: true, fmt: v => v.toFixed(1) },
+  { key: "tinggi_max_cm", label: "Tinggi air (cm)", num: true, fmt: v => id(v) },
   { key: "lama_hari_mean", label: "Durasi (hari)", num: true, fmt: v => v.toFixed(1) },
-  { key: "jiwa_per_tahun", label: "Jiwa Terdampak (jiwa/thn)", num: true, fmt: v => id(v) },
+  { key: "jiwa_per_tahun", label: "Warga terdampak/thn", num: true, fmt: v => id(v) },
   { key: "cluster_id", label: "Klaster", fmt: (v, r) => `<span class="pill c${v}">${esc(r.cluster_name)}</span>` },
 ];
 
@@ -127,13 +127,13 @@ function bukaDetail(slug) {
     <div class="muted">${esc(r.wilayah)}</div>
     <div class="detail-ringkas">
       <div><span class="muted">Peringkat</span><b>#${r.rank_topsis} dari ${data.length}</b></div>
-      <div><span class="muted">Skor TOPSIS</span><b>${r.skor_topsis.toFixed(3)}</b></div>
+      <div><span class="muted">Skor risiko</span><b>${r.skor_topsis.toFixed(3)}</b></div>
       <div><span class="muted">Klaster</span><b><span class="pill c${r.cluster_id}">${esc(r.cluster_name)}</span></b></div>
     </div>
     ${r.silhouette_sample < 0.1 ? '<div class="muted">▲ Kecamatan batas: klaster kurang pasti</div>' : ""}
     <h3>Kriteria</h3>
     <table class="table"><tbody>${window.KRITERIA.map(k =>
-      `<tr><td>${esc(k.desc)}${k.type === "cost" ? " (cost)" : ""}</td><td class="muted">${esc(k.satuan)}</td><td class="num">${nilaiId(r[k.kolom])}</td></tr>`).join("")}</tbody></table>
+      `<tr><td>${esc(k.desc)}</td><td class="muted">${esc(k.satuan)}</td><td class="num">${nilaiId(r[k.kolom])}</td></tr>`).join("")}</tbody></table>
     <h3>Prioritas tindakan</h3>
     ${tindakan ? `<ul>${tindakan.map(t => `<li>${esc(t.tindakan)} <span class="muted">(prioritas ${esc(t.prioritas)})</span></li>`).join("")}</ul>`
                : '<div class="placeholder">Rekomendasi belum ditetapkan.</div>'}

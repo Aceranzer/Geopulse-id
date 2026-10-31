@@ -23,7 +23,9 @@ def main():
     top3 = k.sort_values("rank_topsis").head(3).kecamatan.str.title().tolist()
     assert all(n in html for n in top3), top3
     print("kartu ringkasan cocok dengan CSV | 3 teratas:", top3, "| kejadian rata-rata:", kejadian)
-    print("rentang tahun:", re.search(r"tahun data: ([^<]+)<", html).group(1))
+    from app import rentang_tahun, tahun_data
+    assert f"data {len(tahun_data())} tahun ({rentang_tahun(tahun_data())})" in html, "rentang tahun di kartu tidak cocok dengan berkas data"
+    print("rentang tahun:", rentang_tahun(tahun_data()))
 
     rows = c.get("/api/kecamatan").get_json()
     assert len(rows) == 42 and sorted(x["rank_topsis"] for x in rows) == list(range(1, 43))

@@ -1,3 +1,4 @@
+Chart.defaults.font.size = 14;
 // Komparasi dua kecamatan: kartu ringkas, grafik nilai relatif, tabel nilai asli, panel tindakan.
 const WARNA = window.KLASTER_WARNA, REK = window.REKOMENDASI;
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -17,7 +18,7 @@ function ringkas(r) {
   return `<div class="card">
     <div class="nama">${esc(r.kecamatan)}</div>
     <div class="muted">${esc(r.wilayah)}</div>
-    <div class="angka"><span>Peringkat<b>#${r.rank_topsis}</b></span><span>Skor TOPSIS<b>${r.skor_topsis.toFixed(3)}</b></span></div>
+    <div class="angka"><span>Peringkat<b>#${r.rank_topsis}</b></span><span>Skor risiko<b>${r.skor_topsis.toFixed(3)}</b></span></div>
     <span class="pill c${r.cluster_id}">${esc(r.cluster_name)}</span>
     ${r.silhouette_sample < 0.1 ? '<div class="muted" style="margin-top:8px;">▲ Kecamatan batas: klaster kurang pasti</div>' : ""}
   </div>`;
@@ -42,7 +43,7 @@ function tampil() {
   document.getElementById("thA").textContent = a.kecamatan;
   document.getElementById("thB").textContent = b.kecamatan;
   document.querySelector("#tabel-asli tbody").innerHTML = kriteria.map(c =>
-    `<tr><td>${esc(c.desc)}${c.type === "cost" ? " (cost)" : ""}</td><td>${esc(c.satuan)}</td><td class="num">${fmt(a[c.kolom])}</td><td class="num">${fmt(b[c.kolom])}</td></tr>`).join("");
+    `<tr><td>${esc(c.desc)}</td><td>${esc(c.satuan)}</td><td class="num">${fmt(a[c.kolom])}</td><td class="num">${fmt(b[c.kolom])}</td></tr>`).join("");
 
   const data = {
     labels: kriteria.map(c => c.desc),

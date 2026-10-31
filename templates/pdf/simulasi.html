@@ -13,16 +13,16 @@
   </header>
 
   <h1>Simulasi Bobot: {{ preset }}</h1>
-  <div class="sub">{{ berubah }} dari {{ hasil|length }} kecamatan berpindah peringkat dibandingkan peringkat bawaan (bobot entropi).</div>
+  <div class="sub">{{ berubah }} dari {{ hasil|length }} kecamatan berubah peringkat dibanding peringkat bawaan.</div>
 
   <h2>Bobot kriteria</h2>
   <div class="bobot">
-    {% for b in bobot %}<div><span>{{ b.desc }}{% if b.tipe == "cost" %} (cost){% endif %}</span><b>{{ "%.1f"|format(b.persen) }}%</b></div>{% endfor %}
+    {% for b in bobot %}<div><span>{{ b.desc }}</span><b>{{ "%.1f"|format(b.persen) }}%</b></div>{% endfor %}
   </div>
 
   <h2>Pergeseran peringkat (urut menurut perubahan terbesar)</h2>
   <table class="sim">
-    <thead><tr><th>Kecamatan</th><th>Kota</th><th class="num">Rank bawaan</th><th class="num">Rank baru</th><th class="num">Skor baru</th><th>Perubahan</th></tr></thead>
+    <thead><tr><th>Kecamatan</th><th>Kota</th><th class="num">Awal</th><th class="num">Baru</th><th class="num">Skor</th><th>Perubahan</th></tr></thead>
     <tbody>
     {% for h in hasil %}
       <tr>
@@ -34,7 +34,7 @@
     </tbody>
   </table>
 
-  <footer class="kaki">Dibuat {{ tanggal }}. Geopulse-ID adalah alat pendukung keputusan; hasil simulasi bukan keputusan final.</footer>
+  <footer class="kaki">Dibuat {{ tanggal }}. Alat bantu keputusan, bukan keputusan final.</footer>
 </div>
 {% if auto_print %}<script>window.addEventListener("load", () => window.print());</script>{% endif %}
 </body>
