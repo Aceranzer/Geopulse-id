@@ -1,0 +1,91 @@
+/* Geopulse-ID theme: turunan dari wireframe Figma (monokrom, kartu bergaris tipis, aksen status).
+   Nilai warna diperkirakan dari screenshot; ganti token di :root jika punya kode warna Figma. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  --bg: #ffffff;
+  --ink: #111111;
+  --ink-soft: #555555;
+  --line: #d9d9d9;
+  --row-alt: #f3f3f3;
+  --primary: #111111;        /* tombol utama (Print Document A4) */
+  --primary-ink: #ffffff;
+  --page-active: #3b3f5c;    /* halaman aktif pada pagination */
+
+  /* klaster 0..3: Prioritas Tinggi -> Rendah */
+  --c0: #8b0000; --c0-bg: #fde4e4;
+  --c1: #e4572e; --c1-bg: #ffe9df;
+  --c2: #b8860b; --c2-bg: #fff3b8;   /* "Waspada" pada wireframe berwarna kuning */
+  --c3: #2f7d4f; --c3-bg: #e3f4e6;
+
+  --radius: 8px;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 14px; line-height: 1.5; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+/* header */
+.topbar { border-bottom: 1px solid var(--line); box-shadow: 0 1px 4px rgba(0,0,0,.06); background: var(--bg); }
+.topbar .container { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+.brand { font-size: 24px; font-weight: 700; letter-spacing: -.01em; }
+.nav { display: flex; align-items: center; gap: 24px; }
+.nav a { font-size: 12px; font-weight: 600; color: var(--ink); text-decoration: none; }
+.nav a:hover, .nav a.active { text-decoration: underline; text-underline-offset: 6px; }
+.btn { display: inline-block; padding: 10px 16px; border: 0; border-radius: var(--radius); background: var(--primary); color: var(--primary-ink); font: 600 13px var(--font); cursor: pointer; }
+.btn:hover { opacity: .88; }
+
+/* kartu */
+.card { border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 24px; background: var(--bg); }
+.card h2, .card h3 { margin: 0 0 4px; font-size: 15px; font-weight: 700; }
+.card .muted { color: var(--ink-soft); font-size: 12px; }
+.grid { display: grid; gap: 24px; }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+@media (max-width: 800px) { .grid-4, .grid-2 { grid-template-columns: 1fr; } }
+
+/* kartu statistik: label, angka besar, catatan kecil */
+.stat .label { font-size: 14px; font-weight: 700; }
+.stat .num { font-size: 22px; font-weight: 700; }
+.stat .foot { display: flex; justify-content: space-between; margin-top: 12px; font-size: 10px; color: var(--ink-soft); }
+
+/* daftar prioritas */
+.rank-row { display: flex; align-items: center; gap: 12px; border: 1px solid var(--ink); border-radius: 4px; padding: 8px 12px; margin-bottom: 12px; }
+.rank-row .no { font-size: 18px; font-weight: 600; }
+.rank-row .name { flex: 1; font-size: 11px; }
+
+/* pill status */
+.pill { display: inline-block; padding: 2px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.pill.c0 { background: var(--c0-bg); color: var(--c0); }
+.pill.c1 { background: var(--c1-bg); color: var(--c1); }
+.pill.c2 { background: var(--c2-bg); color: var(--c2); }
+.pill.c3 { background: var(--c3-bg); color: var(--c3); }
+
+/* tabel */
+.table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.table th { text-align: left; padding: 12px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.table td { padding: 12px 8px; }
+.table tbody tr:nth-child(odd) { background: var(--row-alt); }
+input[type=search], select, input[type=text], input[type=file] {
+  border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; font: 12px var(--font); background: var(--bg); color: var(--ink);
+}
+input[type=search] { width: 100%; }
+
+/* pagination */
+.pager { display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 11px; color: var(--ink-soft); }
+.pager .page { width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
+.pager .page.active { background: var(--page-active); border-color: var(--page-active); color: #fff; }
+
+/* footer */
+.footer { border-top: 1px solid var(--line); padding: 16px 0; font-size: 12px; }
+.footer b { margin-right: 8px; }
+
+/* tombol "Print Document A4" memicu window.print() */
+@media print {
+  @page { size: A4; margin: 14mm; }
+  .topbar, .btn, .pager, .no-print { display: none !important; }
+  body { font-size: 11px; }
+  .card { break-inside: avoid; }
+  .table tbody tr:nth-child(odd) { background: #f3f3f3 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
