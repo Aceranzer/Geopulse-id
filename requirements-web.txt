@@ -1,0 +1,8 @@
+# Kebutuhan minimal untuk menjalankan website (deploy, mis. PythonAnywhere).
+# Untuk menjalankan notebook 01-04 gunakan requirements.txt (termasuk geopandas, matplotlib, lxml).
+flask>=3.0
+pandas>=2.2
+numpy>=1.26
+scipy>=1.11
+scikit-learn>=1.4
+weasyprint==70.0
