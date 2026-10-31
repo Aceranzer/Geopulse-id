@@ -56,7 +56,7 @@ def main():
     assert len(kr["data"]) == 42
     print("bobot entropi:", [round(x, 3) for x in kr["bobot"]["entropi"]])
 
-    for url in ["/klaster", "/komparasi"]:
+    for url in ["/klaster", "/komparasi", "/simulasi"]:
         assert c.get(url).status_code == 200, url
     # aturan rekomendasi belum ditetapkan tim -> halaman mengirim null (placeholder), bukan teks karangan
     assert "window.REKOMENDASI" in c.get("/komparasi").get_data(as_text=True)
