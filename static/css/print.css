@@ -1,0 +1,32 @@
+/* Cetak A4 (Ctrl+P). Dimuat dengan media="print", menimpa tema layar. */
+@page { size: A4; margin: 14mm; }
+
+body { font-size: 10.5px; color: #000; background: #fff; }
+.container, .topbar .container { max-width: none; padding: 0; }
+
+/* sembunyikan elemen interaktif */
+.topbar, .footer, .nav, .btn, .pager, .tools, .presets, .no-print,
+.leaflet-control-zoom, .leaflet-control-layers, select, input[type=search] { display: none !important; }
+input[type=range] { display: none !important; }
+.slider-row { grid-template-columns: 1fr 56px !important; }
+
+/* peta cetak bersih: tanpa hillshade */
+.leaflet-tile-pane img[src*="Hillshade"] { display: none !important; }
+.legenda-topo { display: none !important; }
+#peta { height: 300px !important; }
+.peta-prioritas { display: block !important; }
+
+/* tata letak: kartu tidak terpotong, tiap bagian besar mulai dengan rapi */
+h1, h2, h3 { break-after: avoid; }
+.card, .rank-row, tr, .klaster-card { break-inside: avoid; }
+.card { border: 1px solid #000; box-shadow: none; margin-top: 10px !important; }
+.grid-4 { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
+.grid-2 { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+.chart-box { height: 220px !important; }
+
+/* aman untuk hitam-putih: status tidak hanya dibedakan lewat warna */
+.pill { border: 1px solid #000 !important; background: #fff !important; color: #000 !important; font-weight: 700; }
+.naik::before { content: ""; } .naik, .turun { color: #000 !important; }
+.table tbody tr:nth-child(odd) { background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+a { color: #000; text-decoration: none; }
+#peta, canvas { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
