@@ -39,6 +39,7 @@ K_FINAL = 4
 SEED = 42
 CLUSTER_NAMES = ["Prioritas Tinggi", "Waspada", "Menengah", "Rendah"]
 CLUSTER_COLORS = ["#8B0000", "#E4572E", "#F6C85F", "#B7E4A7"]   # merah tua, jingga, kuning, hijau
+SILHOUETTE_BATAS = 0.1   # silhouette per kecamatan di bawah ini = kecamatan batas (klaster kurang pasti)
 
 
 def filter_kecamatan(master: pd.DataFrame) -> pd.DataFrame:

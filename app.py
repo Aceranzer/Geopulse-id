@@ -7,7 +7,10 @@ import pandas as pd
 from flask import Flask, jsonify, render_template
 
 import config
-from src.pipeline import CLUSTER_COLORS, CRITERIA
+from src.pipeline import (CLUSTER_COLORS, CRIT_COLS, CRITERIA, K_FINAL, SILHOUETTE_BATAS,
+                          W_EXPERT)
+from src.recommend import rekomendasi
+from src.topsis import shannon_entropy_weights
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = config.SECRET_KEY or "dev-only-tidak-untuk-produksi"
@@ -15,7 +18,7 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 # halaman yang sudah tersedia (menu header)
-NAV = [("/", "Ringkasan Eksekutif")]
+NAV = [("/", "Ringkasan Eksekutif"), ("/klaster", "Klaster"), ("/komparasi", "Komparasi Wilayah")]
 
 
 def norm(nama):
@@ -73,6 +76,18 @@ def ringkasan():
                            colors=CLUSTER_COLORS)
 
 
+@app.route("/klaster")
+def klaster():
+    return render_template("klaster.html", colors=CLUSTER_COLORS, k_final=K_FINAL, batas=SILHOUETTE_BATAS)
+
+
+@app.route("/komparasi")
+def komparasi():
+    # rekomendasi per klaster; None = belum ditetapkan tim
+    rek = {i: rekomendasi(i) for i in range(K_FINAL)}
+    return render_template("komparasi.html", colors=CLUSTER_COLORS, rek=rek)
+
+
 @app.route("/api/kecamatan")
 def api_kecamatan():
     df = load_table()
@@ -80,6 +95,43 @@ def api_kecamatan():
              "silhouette_sample", "jiwa_per_tahun"] + list(CRITERIA)
     kolom = list(dict.fromkeys(kolom))
     return jsonify(json.loads(df[kolom].to_json(orient="records")))
+
+
+def bobot():
+    """Bobot entropi (dihitung dari data), sama rata, dan pakar."""
+    X = pd.read_csv(config.TOPSIS_CSV)[CRIT_COLS].values.astype(float)
+    return {"entropi": shannon_entropy_weights(X).tolist(),
+            "sama": [1 / len(CRIT_COLS)] * len(CRIT_COLS),
+            "pakar": W_EXPERT.tolist()}
+
+
+@app.route("/api/kriteria")
+def api_kriteria():
+    t = pd.read_csv(config.TOPSIS_CSV)
+    kriteria = [{"kolom": k, **v} for k, v in CRITERIA.items()]
+    data = json.loads(t[["kecamatan"] + CRIT_COLS].to_json(orient="records"))
+    return jsonify({"kriteria": kriteria, "bobot": bobot(), "data": data})
+
+
+@app.route("/api/klaster")
+def api_klaster():
+    df = load_table()
+    rata_semua = df[CRIT_COLS + ["skor_topsis"]].mean()
+    hasil = []
+    for cid, g in df.groupby("cluster_id"):
+        rata = g[CRIT_COLS + ["skor_topsis"]].mean()
+        anggota = [{"kecamatan": r.kecamatan, "rank": int(r.rank_topsis), "silhouette": r.silhouette_sample,
+                    "batas": bool(r.silhouette_sample < SILHOUETTE_BATAS)} for r in g.itertuples()]
+        hasil.append({"cluster_id": int(cid), "nama": g.cluster_name.iloc[0], "warna": CLUSTER_COLORS[int(cid)],
+                      "n": len(g), "rata": rata.to_dict(), "anggota": anggota})
+    return jsonify({"klaster": hasil, "rata_semua": rata_semua.to_dict(),
+                    "kriteria": [{"kolom": k, **v} for k, v in CRITERIA.items()]})
+
+
+@app.route("/api/sweep")
+def api_sweep():
+    sw = pd.read_csv(config.SWEEP_CSV)
+    return jsonify({"k_final": K_FINAL, "sweep": json.loads(sw.to_json(orient="records"))})
 
 
 @app.route("/api/geojson")
