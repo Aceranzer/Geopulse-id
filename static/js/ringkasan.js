@@ -72,7 +72,7 @@ function tampilTabel() {
   const mulai = (halaman - 1) * per;
 
   document.querySelector("#tabel tbody").innerHTML = rows.slice(mulai, mulai + per)
-    .map(r => "<tr>" + KOLOM.map(k => `<td class="${k.num ? "num" : ""}">${k.fmt(r[k.key], r)}</td>`).join("") + "</tr>").join("");
+    .map(r => `<tr data-slug="${esc(r.slug)}" tabindex="0" class="klik" title="Klik untuk detail">` + KOLOM.map(k => `<td class="${k.num ? "num" : ""}">${k.fmt(r[k.key], r)}</td>`).join("") + "</tr>").join("");
 
   let pager = `<span>${rows.length} kecamatan</span>`;
   for (let p = 1; p <= total; p++) pager += `<a href="#" class="page ${p === halaman ? "active" : ""}" data-p="${p}" style="text-decoration:none">${p}</a>`;
@@ -97,7 +97,11 @@ function mulaiTabel() {
 }
 
 Promise.all([fetch("/api/kecamatan").then(r => r.json()), fetch("/api/geojson").then(r => r.json())])
-  .then(([rows, geo]) => { data = rows; buatPeta(geo); mulaiTabel(); })
+  .then(([rows, geo]) => {
+    data = rows; buatPeta(geo); mulaiTabel();
+    const awal = new URLSearchParams(location.search).get("detail");     // tautan langsung: /?detail=kebon-jeruk
+    if (awal) bukaDetail(awal);
+  })
   .catch(() => { document.getElementById("peta").textContent = "Data gagal dimuat."; });
 
 // saat dicetak, tampilkan seluruh baris tabel lalu kembalikan pilihan semula
@@ -109,3 +113,41 @@ window.addEventListener("beforeprint", () => {
 window.addEventListener("afterprint", () => {
   if (jumlahSebelumCetak) { document.getElementById("jumlah").value = jumlahSebelumCetak; halaman = 1; tampilTabel(); }
 });
+
+// ---- panel detail kecamatan ----
+const dlg = document.getElementById("detail");
+const nilaiId = v => (Math.abs(v) >= 100 ? v.toLocaleString("id-ID", { maximumFractionDigits: 0 }) : v.toLocaleString("id-ID", { maximumFractionDigits: 2 }));
+
+function bukaDetail(slug) {
+  const r = data.find(d => d.slug === slug);
+  if (!r) return;
+  const tindakan = window.REKOMENDASI[r.cluster_id];
+  document.getElementById("detail-isi").innerHTML = `
+    <h2 style="margin:0">${esc(r.kecamatan)}</h2>
+    <div class="muted">${esc(r.wilayah)}</div>
+    <div class="detail-ringkas">
+      <div><span class="muted">Peringkat</span><b>#${r.rank_topsis} dari ${data.length}</b></div>
+      <div><span class="muted">Skor TOPSIS</span><b>${r.skor_topsis.toFixed(3)}</b></div>
+      <div><span class="muted">Klaster</span><b><span class="pill c${r.cluster_id}">${esc(r.cluster_name)}</span></b></div>
+    </div>
+    ${r.silhouette_sample < 0.1 ? '<div class="muted">▲ Kecamatan batas: klaster kurang pasti</div>' : ""}
+    <h3>Kriteria</h3>
+    <table class="table"><tbody>${window.KRITERIA.map(k =>
+      `<tr><td>${esc(k.desc)}${k.type === "cost" ? " (cost)" : ""}</td><td class="muted">${esc(k.satuan)}</td><td class="num">${nilaiId(r[k.kolom])}</td></tr>`).join("")}</tbody></table>
+    <h3>Prioritas tindakan</h3>
+    ${tindakan ? `<ul>${tindakan.map(t => `<li>${esc(t.tindakan)} <span class="muted">(prioritas ${esc(t.prioritas)})</span></li>`).join("")}</ul>`
+               : '<div class="placeholder">Rekomendasi belum ditetapkan.</div>'}
+    <div class="muted" style="margin-top:6px">${esc(window.CATATAN)}</div>
+    <div style="margin-top:14px"><a class="btn" href="/ekspor/kecamatan/${esc(r.slug)}.pdf">Unduh profil (PDF)</a></div>`;
+  dlg.showModal();
+}
+
+document.querySelector("#tabel tbody").addEventListener("click", e => {
+  const tr = e.target.closest("tr[data-slug]");
+  if (tr) bukaDetail(tr.dataset.slug);
+});
+document.querySelector("#tabel tbody").addEventListener("keydown", e => {
+  if (e.key === "Enter" && e.target.dataset.slug) bukaDetail(e.target.dataset.slug);
+});
+document.getElementById("detail-tutup").addEventListener("click", () => dlg.close());
+dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });   // klik latar = tutup

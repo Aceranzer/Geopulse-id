@@ -64,6 +64,11 @@ function hitung() {
     .catch(() => { if (saya === urutan) document.getElementById("ringkasan").textContent = "Server tidak dapat dihubungi."; });
 }
 
+// tombol PDF mengirim bobot aktif ke server
+document.getElementById("form-pdf").addEventListener("submit", () => {
+  document.getElementById("payload-pdf").value = JSON.stringify({ preset: mode, bobot: bobotAktif() });
+});
+
 function pilihMode(m) {
   if (m === "kustom" && !raw.length) raw = bobot[mode].map(v => v * 100);   // mulai dari preset yang sedang dipilih
   mode = m;
