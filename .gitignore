@@ -1,4 +1,7 @@
-/Data/processed
-/Data/interim
-/Data/Raw/*_files/
-src/__pycache__/
+/data/processed
+/data/interim
+/data/raw/*_files/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
