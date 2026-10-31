@@ -67,6 +67,15 @@ def main():
         assert daftar and all({"tindakan", "prioritas", "sumber"} <= set(x) for x in daftar), i
     assert rekomendasi(99) is None
     assert CATATAN_VALIDASI.split(";")[0] in c.get("/komparasi").get_data(as_text=True)
+    # metodologi: angka berasal dari data/metrics.json dan bobot aktif
+    import json
+    mt = json.load(open(config.METRICS_JSON, encoding="utf-8"))
+    r = c.get("/metodologi")
+    assert r.status_code == 200
+    html = r.get_data(as_text=True)
+    assert f"{mt['metrics']['silhouette']:.3f}" in html and f"{max(mt['weights']['entropi'].values()) * 100:.1f}%" in html
+    assert f"{mt['n_kecamatan']} kecamatan" in html
+    assert "print.css" in c.get("/").get_data(as_text=True)
     print("LULUS")
 
 

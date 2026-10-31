@@ -8,7 +8,7 @@ import pandas as pd
 from flask import Flask, jsonify, render_template, request
 
 import config
-from src.pipeline import (CLUSTER_COLORS, CRIT_COLS, CRIT_TYPES, CRITERIA, K_FINAL,
+from src.pipeline import (CLUSTER_COLORS, CLUSTER_NAMES, CRIT_COLS, CRIT_TYPES, CRITERIA, K_FINAL,
                           SILHOUETTE_BATAS, W_EXPERT)
 from src.recommend import CATATAN_VALIDASI, rekomendasi
 from src.topsis import shannon_entropy_weights, topsis
@@ -19,7 +19,8 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 # halaman yang sudah tersedia (menu header)
-NAV = [("/", "Ringkasan Eksekutif"), ("/simulasi", "Simulasi Bobot"), ("/komparasi", "Komparasi Wilayah"), ("/klaster", "Klaster")]
+NAV = [("/", "Ringkasan Eksekutif"), ("/simulasi", "Simulasi Bobot"), ("/komparasi", "Komparasi Wilayah"),
+       ("/klaster", "Klaster"), ("/metodologi", "Metodologi & Data")]
 
 
 def norm(nama):
@@ -75,6 +76,25 @@ def ringkasan():
     }
     return render_template("ringkasan.html", stats=stats, top3=df.head(3).to_dict("records"),
                            colors=CLUSTER_COLORS)
+
+
+@app.route("/metodologi")
+def metodologi():
+    with open(config.METRICS_JSON, encoding="utf-8") as f:
+        metrics = json.load(f)
+    w = bobot()
+    tabel_bobot = [{"desc": c["desc"], "dimensi": c["dimensi"], "tipe": c["type"],
+                    "entropi": w["entropi"][i] * 100, "sama": w["sama"][i] * 100, "pakar": w["pakar"][i] * 100}
+                   for i, c in enumerate(CRITERIA.values())]
+    terbesar = max(tabel_bobot, key=lambda r: r["entropi"])
+    sw = pd.read_csv(config.SWEEP_CSV).set_index("k")
+    tahun = tahun_data()
+    return render_template(
+        "metodologi.html", metrics=metrics["metrics"], timestamp=metrics["timestamp"], n_kecamatan=metrics["n_kecamatan"],
+        tabel_bobot=tabel_bobot, terbesar=terbesar, k_final=K_FINAL,
+        klaster=[{"id": int(i), "nama": CLUSTER_NAMES[int(i)], "n": n} for i, n in metrics["metrics"]["ukuran_klaster"].items()],
+        sil_min=sw.silhouette.min(), sil_maks=sw.silhouette.max(), sil_k=sw.silhouette.loc[K_FINAL],
+        n_tahun=len(tahun), rentang_tahun=rentang_tahun(tahun), batas=SILHOUETTE_BATAS, catatan=CATATAN_VALIDASI)
 
 
 @app.route("/simulasi")

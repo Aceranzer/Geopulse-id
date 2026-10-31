@@ -99,3 +99,13 @@ function mulaiTabel() {
 Promise.all([fetch("/api/kecamatan").then(r => r.json()), fetch("/api/geojson").then(r => r.json())])
   .then(([rows, geo]) => { data = rows; buatPeta(geo); mulaiTabel(); })
   .catch(() => { document.getElementById("peta").textContent = "Data gagal dimuat."; });
+
+// saat dicetak, tampilkan seluruh baris tabel lalu kembalikan pilihan semula
+let jumlahSebelumCetak = null;
+window.addEventListener("beforeprint", () => {
+  const sel = document.getElementById("jumlah");
+  jumlahSebelumCetak = sel.value; sel.value = "50"; halaman = 1; tampilTabel();
+});
+window.addEventListener("afterprint", () => {
+  if (jumlahSebelumCetak) { document.getElementById("jumlah").value = jumlahSebelumCetak; halaman = 1; tampilTabel(); }
+});

@@ -1,0 +1,48 @@
+{
+  "timestamp": "2026-10-31T15:35:05",
+  "n_kecamatan": 42,
+  "weights": {
+    "entropi": {
+      "frek_tahun_banjir": 0.013125960971132982,
+      "bulan_banjir_per_tahun": 0.07933393703287857,
+      "kejadian_per_tahun": 0.0979130733284537,
+      "tinggi_max_cm": 0.03789918687535897,
+      "lama_hari_mean": 0.03681015853286578,
+      "jiwa_per_1000": 0.22057082007215897,
+      "kepadatan_jiwa_km2": 0.03590489862866352,
+      "n_alat_dini": 0.47844196455848753
+    },
+    "sama": {
+      "frek_tahun_banjir": 0.125,
+      "bulan_banjir_per_tahun": 0.125,
+      "kejadian_per_tahun": 0.125,
+      "tinggi_max_cm": 0.125,
+      "lama_hari_mean": 0.125,
+      "jiwa_per_1000": 0.125,
+      "kepadatan_jiwa_km2": 0.125,
+      "n_alat_dini": 0.125
+    },
+    "pakar": {
+      "frek_tahun_banjir": 0.1,
+      "bulan_banjir_per_tahun": 0.15,
+      "kejadian_per_tahun": 0.15,
+      "tinggi_max_cm": 0.1,
+      "lama_hari_mean": 0.1,
+      "jiwa_per_1000": 0.2,
+      "kepadatan_jiwa_km2": 0.1,
+      "n_alat_dini": 0.1
+    }
+  },
+  "metrics": {
+    "k": 4,
+    "silhouette": 0.35051212190777603,
+    "DBI": 0.8797570002193359,
+    "CH": 26.950349238726385,
+    "ukuran_klaster": {
+      "0": 14,
+      "1": 11,
+      "2": 7,
+      "3": 10
+    }
+  }
+}
