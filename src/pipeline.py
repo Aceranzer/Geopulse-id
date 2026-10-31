@@ -6,6 +6,11 @@ tanpa mengubah hasil. Input: tabel master 42 kecamatan (data/dki_master.csv).
 Membuat tabel master dari file mentah tetap dilakukan 01_data.ipynb (butuh geopandas).
 """
 
+import argparse
+import json
+from datetime import datetime
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
@@ -34,6 +39,9 @@ CRIT_TYPES = [CRITERIA[c]["type"] for c in CRIT_COLS]
 W_EXPERT = np.array([0.10, 0.15, 0.15, 0.10, 0.10, 0.20, 0.10, 0.10])
 W_EXPERT = W_EXPERT / W_EXPERT.sum()
 
+# skema pembanding 6 kriteria (tanpa durasi genangan dan alat dini), seperti di 02_topsis.ipynb
+CRIT_6 = ["frek_tahun_banjir", "bulan_banjir_per_tahun", "kejadian_per_tahun", "tinggi_max_cm", "jiwa_per_1000", "kepadatan_jiwa_km2"]
+
 CLUSTER_FEATURES = ["skor_topsis", "jiwa_per_1000", "kepadatan_jiwa_km2"]
 K_FINAL = 4
 SEED = 42
@@ -61,6 +69,9 @@ def compute_topsis(df_kec: pd.DataFrame) -> pd.DataFrame:
     for nama, kode in [("sama", "equal"), ("pakar", "expert")]:
         out[f"skor_{kode}"] = topsis(X, weights[nama], CRIT_TYPES)[0]
         out[f"rank_{kode}"] = out[f"skor_{kode}"].rank(ascending=False).astype(int)
+    X6 = df_kec[CRIT_6].values.astype(float)
+    out["skor_topsis_6kriteria"] = topsis(X6, shannon_entropy_weights(X6), ["benefit"] * len(CRIT_6))[0]
+    out["rank_topsis_6kriteria"] = out.skor_topsis_6kriteria.rank(ascending=False).astype(int)
     out.attrs["weights"] = weights
     return out
 
@@ -149,3 +160,54 @@ def run_pipeline(master: pd.DataFrame):
     clustered_df, metrics, sweep = compute_clusters(topsis_df)
     info = {"weights": topsis_df.attrs["weights"], "metrics": metrics, "sweep": sweep}
     return topsis_df, clustered_df, info
+
+
+def write_outputs(topsis_df, clustered_df, info, out_dir):
+    """Tulis topsis_result.csv, clustered_result.csv, k_sweep.csv, metrics.json ke out_dir."""
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    topsis_df.to_csv(out / "topsis_result.csv", index=False)
+    clustered_df.to_csv(out / "clustered_result.csv", index=False, encoding="utf-8")
+    info["sweep"].to_csv(out / "k_sweep.csv")
+    metrics = {
+        "timestamp": datetime.now().isoformat(timespec="seconds"),
+        "n_kecamatan": len(topsis_df),
+        "weights": {nama: dict(zip(CRIT_COLS, map(float, w))) for nama, w in info["weights"].items()},
+        "metrics": info["metrics"],
+    }
+    with open(out / "metrics.json", "w", encoding="utf-8") as f:
+        json.dump(metrics, f, indent=2, ensure_ascii=False)
+    return metrics
+
+
+def main(argv=None):
+    """python -m src.pipeline --input data/dki_master.csv --output data/"""
+    from src.validate import validate_master, validate_result
+
+    ap = argparse.ArgumentParser(description="Hitung TOPSIS + K-Means dari tabel master dan tulis hasilnya.")
+    ap.add_argument("--input", default="data/dki_master.csv", help="tabel master 42 kecamatan (+ Kepulauan Seribu)")
+    ap.add_argument("--output", default="data/", help="folder tujuan CSV hasil dan metrics.json")
+    ap.add_argument("--geojson", default="data/kecamatan_poly.geojson", help="untuk mencocokkan nama kecamatan")
+    args = ap.parse_args(argv)
+
+    master = pd.read_csv(args.input)
+    with open(args.geojson, encoding="utf-8") as f:
+        nama_geojson = [ft["properties"]["kecamatan"] for ft in json.load(f)["features"]]
+    galat = validate_master(master, nama_geojson)
+    if galat:
+        print("Data ditolak:")
+        for g in galat:
+            print(" -", g)
+        return 1
+
+    topsis_df, clustered_df, info = run_pipeline(master)
+    for w in validate_result(clustered_df):
+        print("Peringatan:", w)
+    m = write_outputs(topsis_df, clustered_df, info, args.output)
+    print(f"Selesai: {m['n_kecamatan']} kecamatan, silhouette {m['metrics']['silhouette']:.3f}, "
+          f"ukuran klaster {list(m['metrics']['ukuran_klaster'].values())} -> {args.output}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

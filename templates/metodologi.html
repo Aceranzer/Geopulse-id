@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Metodologi & Data · Geopulse-ID{% endblock %}
+
+{% block head %}
+  <style>
+    .prosa { max-width: 980px; }
+    .prosa h2 { font-size: 17px; margin: 28px 0 8px; }
+    .prosa p, .prosa li { font-size: 13px; line-height: 1.65; }
+    .prosa ul, .prosa ol { padding-left: 20px; margin: 6px 0; }
+    .prosa .table td, .prosa .table th { font-size: 12px; vertical-align: top; }
+    .prosa .table td.num, .prosa .table th.num { text-align: right; }
+    .rumus { background: var(--row-alt); border-radius: 6px; padding: 10px 14px; font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; margin: 8px 0; white-space: pre-wrap; }
+    .catatan { border: 1px solid var(--ink); border-radius: 6px; padding: 10px 14px; font-size: 12.5px; margin-top: 8px; }
+    .ya { font-weight: 700; } .tidak { color: var(--ink-soft); }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="prosa">
+  <h1 style="font-size:22px; margin:0 0 4px;">Metodologi &amp; Data</h1>
+  <p class="muted" style="margin:0; color:var(--ink-soft);">
+    Versi data: dihitung {{ timestamp.replace("T", " ") }} · {{ n_kecamatan }} kecamatan daratan DKI Jakarta (Kepulauan Seribu dipisahkan).
+  </p>
+
+  <h2>1. Alur kerja (CRISP-DM)</h2>
+  <ol>
+    <li><b>Business understanding:</b> menentukan kecamatan yang perlu diprioritaskan untuk mitigasi risiko banjir, sebagai bahan pertimbangan Pemda/BPBD.</li>
+    <li><b>Data understanding:</b> memeriksa tiap berkas Satu Data Jakarta (level wilayah, tahun, kualitas, masalah).</li>
+    <li><b>Data preparation:</b> membersihkan dan menggabungkan data menjadi satu tabel per kecamatan (notebook <code>01_data</code>).</li>
+    <li><b>Modeling:</b> TOPSIS dengan bobot entropi (<code>02_topsis</code>), lalu K-Means (<code>03_kmeans</code>).</li>
+    <li><b>Evaluation:</b> silhouette, Davies-Bouldin, Calinski-Harabasz, kestabilan antar-inisialisasi, dan simulasi bobot.</li>
+    <li><b>Deployment:</b> website ini; hasil dibaca dari berkas CSV di folder <code>data/</code>.</li>
+  </ol>
+
+  <h2>2. Sumber data</h2>
+  <p>Berkas yang diperiksa dan statusnya. Tahun kejadian banjir yang tersedia: {{ n_tahun }} tahun ({{ rentang_tahun }}).</p>
+  <div style="overflow-x:auto;">
+  <table class="table">
+    <thead><tr><th>Sumber</th><th>Status</th><th>Keterangan</th></tr></thead>
+    <tbody>
+      <tr><td>Kepadatan dan luas wilayah per kelurahan</td><td class="ya">Dipakai</td><td>Penduduk dan kepadatan per kecamatan (agregasi dari kelurahan). Luas 2015–2019 rusak tidak seragam, sehingga luas dikunci pada nilai tahun 2014.</td></tr>
+      <tr><td>Kejadian banjir per kelurahan</td><td class="ya">Dipakai</td><td>Sumber kriteria bahaya (frekuensi, tinggi, durasi, jiwa terdampak). Hanya {{ n_tahun }} dari 12 tahun (2013–2024) yang tersedia.</td></tr>
+      <tr><td>Alat peringatan dini (EWS)</td><td class="ya">Dipakai</td><td>Titik koordinat dicocokkan ke poligon kecamatan (spatial join) dan dihitung per kecamatan; lintang/bujur yang tertukar dan duplikat dibersihkan.</td></tr>
+      <tr><td>Batas wilayah kecamatan (GeoJSON)</td><td class="ya">Dipakai</td><td>Dasar peta dan pencocokan titik ke kecamatan.</td></tr>
+      <tr><td>Rekapitulasi banjir tahunan provinsi</td><td class="tidak">Validasi saja</td><td>Level provinsi; kolom kecamatan berisi jumlah, bukan rincian.</td></tr>
+      <tr><td>Lokasi rumah pompa</td><td class="tidak">Tidak jadi kriteria</td><td>Dibersihkan (snapshot terbaru, koordinat, satuan kapasitas) dan tersedia di tabel master untuk analisis lanjutan, tetapi kriteria TOPSIS tetap 8 sesuai keputusan tim.</td></tr>
+      <tr><td>Meteorologi</td><td class="tidak">Tidak dipakai</td><td>Data per stasiun (bukan per kecamatan) dan hanya mencakup 2024 ke atas, sedangkan sebagian besar data banjir berasal dari 2013–2020.</td></tr>
+      <tr><td>Fasilitas kesehatan</td><td class="tidak">Tidak dipakai</td><td>Hanya sampai tingkat kota administrasi, tidak sampai kecamatan.</td></tr>
+      <tr><td>Infrastruktur sumber daya air (SDA)</td><td class="tidak">Tidak dipakai</td><td>Level provinsi dan tanpa lokasi.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>3. Perbaikan galat data</h2>
+  <ul>
+    <li><b>Jiwa terdampak:</b> tercatat per kelurahan per bulan dan mengandung outlier (satu catatan bernilai ratusan ribu jiwa). Perbaikannya: tiap catatan dibatasi pada jumlah penduduk kelurahan sebagai batas atas, nilai 0 dianggap tidak tercatat, dan dampak tahunan diambil dari nilai maksimum per kelurahan per tahun agar warga yang sama tidak dihitung berulang. Hasilnya dinyatakan sebagai jiwa per 1000 penduduk.</li>
+    <li><b>Luas wilayah:</b> dikunci pada nilai tahun 2014 karena nilai 2015–2019 rusak.</li>
+    <li><b>Nama wilayah:</b> nama kecamatan dan kelurahan dinormalisasi (huruf besar, spasi, ejaan) agar data dari berkas berbeda dapat digabung; nama kecamatan pada tabel dan peta dicocokkan dengan fungsi normalisasi yang sama.</li>
+  </ul>
+
+  <h2>4. TOPSIS dan bobot entropi</h2>
+  <p>Setiap kecamatan dinilai dengan 8 kriteria (7 benefit dan 1 cost). TOPSIS mengurutkan kecamatan menurut kedekatannya dengan solusi ideal positif dan kejauhannya dari solusi ideal negatif:</p>
+  <div class="rumus">r_ij = x_ij / sqrt(Σ_i x_ij²)          (normalisasi vektor)
+v_ij = w_j · r_ij                       (pembobotan)
+C_i  = D_i⁻ / (D_i⁺ + D_i⁻)            (skor 0–1; makin besar makin prioritas)</div>
+  <p>Bobot bawaan dihitung dengan entropi Shannon: kriteria yang nilainya lebih bervariasi antar-kecamatan mendapat bobot lebih besar. Bobot ini dihitung dari data, sehingga data baru ikut menggeser bobot dan peringkat. Berikut bobot yang berlaku sekarang:</p>
+  <div style="overflow-x:auto;">
+  <table class="table">
+    <thead><tr><th>Kriteria</th><th>Dimensi</th><th>Tipe</th><th class="num">Entropi (bawaan)</th><th class="num">Sama rata</th><th class="num">Pakar</th></tr></thead>
+    <tbody>
+    {% for r in tabel_bobot %}
+      <tr><td>{{ r.desc }}</td><td>{{ r.dimensi }}</td><td>{{ r.tipe }}</td><td class="num">{{ "%.1f"|format(r.entropi) }}%</td><td class="num">{{ "%.1f"|format(r.sama) }}%</td><td class="num">{{ "%.1f"|format(r.pakar) }}%</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p>Bobot entropi terbesar jatuh pada <b>{{ terbesar.desc }}</b> ({{ "%.1f"|format(terbesar.entropi) }}%). Halaman <a href="/simulasi">Simulasi Bobot</a> memperlihatkan bagaimana peringkat bergeser bila bobot diganti.</p>
+
+  <h2>5. K-Means dan pemilihan k = {{ k_final }}</h2>
+  <p>Kecamatan dikelompokkan dengan K-Means memakai tiga fitur: skor TOPSIS, jiwa terdampak per 1000 penduduk, dan kepadatan penduduk. Fitur yang miring diberi transformasi log1p, nilai ekstrem dipangkas pada persentil 5 dan 95, lalu semua fitur distandarkan (z-score). Klaster diberi nomor menurut rata-rata skor TOPSIS: 0 = tertinggi (Prioritas Tinggi) sampai {{ k_final - 1 }} = terendah.</p>
+  <p>Jumlah klaster dipilih k = {{ k_final }} demi keterbacaan, yaitu empat tingkat prioritas yang mudah dipakai pengambil keputusan. Metode Elbow tidak menunjukkan siku yang tegas, dan silhouette hampir datar sepanjang k = 2–7 ({{ "%.3f"|format(sil_min) }}–{{ "%.3f"|format(sil_maks) }}; k = {{ k_final }}: {{ "%.3f"|format(sil_k) }} pada tabel sapuan). Grafiknya ada di halaman <a href="/klaster">Klaster</a>.</p>
+  <p>Metrik model akhir: silhouette <b>{{ "%.3f"|format(metrics.silhouette) }}</b>, Davies-Bouldin <b>{{ "%.3f"|format(metrics.DBI) }}</b>, Calinski-Harabasz <b>{{ "%.1f"|format(metrics.CH) }}</b>. Ukuran klaster:
+    {% for k in klaster %}{{ k.nama }} {{ k.n }}{% if not loop.last %}, {% endif %}{% endfor %}.
+    (Tabel sapuan memakai 50 inisialisasi dan model akhir 100, sehingga selisih silhouette kecil.)</p>
+  <p>Kecamatan dengan silhouette di bawah {{ batas }} ditandai "kurang pasti" karena posisinya dekat batas antar-klaster.</p>
+
+  <h2>6. Keterbatasan</h2>
+  <ul>
+    <li>Silhouette sekitar {{ "%.2f"|format(metrics.silhouette) }} tergolong lemah: klaster saling berdekatan dan tidak terpisah tegas. Hal ini wajar untuk hanya {{ n_kecamatan }} kecamatan, tetapi klaster sebaiknya dibaca sebagai tingkat prioritas, bukan kelompok yang benar-benar terpisah.</li>
+    <li>Data kejadian banjir hanya mencakup {{ n_tahun }} dari 12 tahun; data 2020 tercatat hanya sampai September. Daerah yang jarang dilaporkan dapat tampak lebih aman daripada kenyataan.</li>
+    <li>Kepadatan penduduk bersumber dari tahun 2019; alat peringatan dini dari 2024–2025.</li>
+    <li>Peringkat sensitif terhadap pilihan bobot: ganti skema bobot di halaman Simulasi dan susunan peringkat dapat berubah banyak.</li>
+    <li>Model memakai data historis dan tidak memodelkan elevasi, curah hujan, atau kapasitas drainase.</li>
+  </ul>
+
+  <h2>7. Etika dan privasi</h2>
+  <p>Seluruh data bersifat agregat per kecamatan dan tidak memuat data pribadi. Hasil adalah alat bantu pengambilan keputusan, bukan keputusan tunggal, dan kualitasnya bergantung pada kualitas data sumber.</p>
+  <div class="catatan">{{ catatan }}</div>
+</div>
+{% endblock %}
