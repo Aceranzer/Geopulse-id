@@ -19,7 +19,7 @@ function gambarSlider() {
   const w = bobotAktif();
   slidersEl.innerHTML = kriteria.map((c, j) => `
     <div class="slider-row">
-      <label for="s${j}">${esc(c.desc)}${c.type === "cost" ? " (cost)" : ""}<span class="muted"> · ${esc(c.dimensi)}</span></label>
+      <label for="s${j}">${esc(c.desc)}<span class="muted"> · ${esc(c.dimensi)}</span></label>
       <input type="range" id="s${j}" min="0" max="100" step="0.5" value="${(mode === "kustom" ? raw[j] : w[j] * 100).toFixed(1)}" ${mode === "kustom" ? "" : "disabled"}>
       <b id="p${j}">${(w[j] * 100).toFixed(1)}%</b>
     </div>`).join("");
@@ -41,7 +41,7 @@ function tampilkan(hasil) {
   const berubah = hasil.filter(h => h.delta !== 0).length;
   const top10Sama = hasil.filter(h => h.rank_baru <= 10 && h.rank_bawaan <= 10).length;
   document.getElementById("ringkasan").innerHTML =
-    `<b>${NAMA_PRESET[mode]}</b>: ${berubah} dari ${hasil.length} kecamatan berpindah peringkat; ${top10Sama} dari 10 kecamatan teratas bawaan tetap di 10 besar.`;
+    `<b>${NAMA_PRESET[mode]}</b>: ${berubah} kecamatan berubah peringkat · ${top10Sama} dari 10 teratas bawaan tetap di 10 besar.`;
 
   document.querySelector("#tabel tbody").innerHTML = hasil.map(h => {
     const panah = h.delta > 0 ? `<span class="naik">▲ naik ${h.delta}</span>` : h.delta < 0 ? `<span class="turun">▼ turun ${-h.delta}</span>` : '<span class="muted">– tetap</span>';

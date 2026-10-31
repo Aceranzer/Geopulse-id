@@ -7,8 +7,7 @@ Bahaya, Kerentanan, dan Kapasitas, dan wajib divalidasi tim lapangan/BPBD sebelu
 """
 
 SUMBER = "Kerangka Perka BNPB 02/2012 (draf awal, belum divalidasi lapangan)"
-CATATAN_VALIDASI = ("Rekomendasi awal berbasis kerangka pengkajian risiko BNPB. "
-                    "Butuh validasi tim lapangan sebelum dieksekusi; keputusan final tetap pada BPBD.")
+CATATAN_VALIDASI = "Rekomendasi awal; perlu divalidasi tim lapangan. Keputusan final ada pada BPBD."
 
 
 def _t(tindakan, prioritas):
