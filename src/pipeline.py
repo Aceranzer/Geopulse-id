@@ -56,14 +56,16 @@ def filter_kecamatan(master: pd.DataFrame) -> pd.DataFrame:
     return master[~is_seribu].copy().reset_index(drop=True)
 
 
-def compute_topsis(df_kec: pd.DataFrame) -> pd.DataFrame:
-    """Skor TOPSIS dengan bobot entropi, sama rata, dan pakar."""
+def compute_topsis(df_kec: pd.DataFrame, bobot=None) -> pd.DataFrame:
+    """Skor TOPSIS. bobot=None -> bobot entropi (bawaan); bobot berupa 8 angka -> bobot aktif dari pengguna.
+    Kolom skor_equal / skor_expert selalu memakai bobot sama rata dan pakar."""
     X = df_kec[CRIT_COLS].values.astype(float)
     n = X.shape[1]
     weights = {"entropi": shannon_entropy_weights(X), "sama": np.ones(n) / n, "pakar": W_EXPERT}
 
     out = df_kec.copy()
-    C, D_pos, D_neg, _, _ = topsis(X, weights["entropi"], CRIT_TYPES)
+    w_utama = weights["entropi"] if bobot is None else np.asarray(bobot, dtype=float)
+    C, D_pos, D_neg, _, _ = topsis(X, w_utama, CRIT_TYPES)
     out["skor_topsis"], out["D_pos"], out["D_neg"] = C, D_pos, D_neg
     out["rank_topsis"] = out.skor_topsis.rank(ascending=False).astype(int)
     for nama, kode in [("sama", "equal"), ("pakar", "expert")]:
@@ -154,15 +156,15 @@ def compute_clusters(topsis_df: pd.DataFrame):
     return clustered, metrics, sweep
 
 
-def run_pipeline(master: pd.DataFrame):
-    """master (42+2 baris, kolom 'kecamatan') -> (topsis_df, clustered_df, info)."""
-    topsis_df = compute_topsis(filter_kecamatan(master))
+def run_pipeline(master: pd.DataFrame, bobot=None):
+    """master (42+2 baris, kolom 'kecamatan') -> (topsis_df, clustered_df, info). bobot=None -> entropi."""
+    topsis_df = compute_topsis(filter_kecamatan(master), bobot)
     clustered_df, metrics, sweep = compute_clusters(topsis_df)
     info = {"weights": topsis_df.attrs["weights"], "metrics": metrics, "sweep": sweep}
     return topsis_df, clustered_df, info
 
 
-def write_outputs(topsis_df, clustered_df, info, out_dir):
+def write_outputs(topsis_df, clustered_df, info, out_dir, rentang_tahun=""):
     """Tulis topsis_result.csv, clustered_result.csv, k_sweep.csv, metrics.json ke out_dir."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -172,8 +174,10 @@ def write_outputs(topsis_df, clustered_df, info, out_dir):
     metrics = {
         "timestamp": datetime.now().isoformat(timespec="seconds"),
         "n_kecamatan": len(topsis_df),
-        "weights": {nama: dict(zip(CRIT_COLS, map(float, w))) for nama, w in info["weights"].items()},
-        "metrics": info["metrics"],
+        "rentang_tahun": rentang_tahun,
+        "kriteria": CRIT_COLS,
+        "weights": {nama: [float(v) for v in w] for nama, w in info["weights"].items()},
+        "metrics_baseline": info["metrics"],
     }
     with open(out / "metrics.json", "w", encoding="utf-8") as f:
         json.dump(metrics, f, indent=2, ensure_ascii=False)
@@ -188,6 +192,7 @@ def main(argv=None):
     ap.add_argument("--input", default="data/dki_master.csv", help="tabel master 42 kecamatan (+ Kepulauan Seribu)")
     ap.add_argument("--output", default="data/", help="folder tujuan CSV hasil dan metrics.json")
     ap.add_argument("--geojson", default="data/kecamatan_poly.geojson", help="untuk mencocokkan nama kecamatan")
+    ap.add_argument("--raw", default="data/raw", help="folder berkas mentah (untuk mencatat rentang tahun data)")
     args = ap.parse_args(argv)
 
     master = pd.read_csv(args.input)
@@ -203,9 +208,11 @@ def main(argv=None):
     topsis_df, clustered_df, info = run_pipeline(master)
     for w in validate_result(clustered_df):
         print("Peringatan:", w)
-    m = write_outputs(topsis_df, clustered_df, info, args.output)
-    print(f"Selesai: {m['n_kecamatan']} kecamatan, silhouette {m['metrics']['silhouette']:.3f}, "
-          f"ukuran klaster {list(m['metrics']['ukuran_klaster'].values())} -> {args.output}")
+    from src.tahun import rentang_tahun, tahun_data
+    m = write_outputs(topsis_df, clustered_df, info, args.output, rentang_tahun(tahun_data(args.raw)))
+    mb = m["metrics_baseline"]
+    print(f"Selesai: {m['n_kecamatan']} kecamatan, silhouette {mb['silhouette']:.3f}, "
+          f"ukuran klaster {list(mb['ukuran_klaster'].values())} -> {args.output}")
     return 0
 
 
