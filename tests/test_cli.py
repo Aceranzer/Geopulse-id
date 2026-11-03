@@ -38,8 +38,9 @@ def test_cli_sama_dengan_csv(tmp_path):
     m = json.load(open(tmp_path / "metrics.json", encoding="utf-8"))
     assert m["n_kecamatan"] == 42 and {"entropi", "sama", "pakar"} <= set(m["weights"])
     for w in m["weights"].values():
-        assert abs(sum(w.values()) - 1) < 1e-9
-    assert set(m["metrics"]) >= {"silhouette", "DBI", "CH", "ukuran_klaster"} and m["timestamp"]
+        assert len(w) == len(m["kriteria"]) == 8 and abs(sum(w) - 1) < 1e-9
+    assert set(m["metrics_baseline"]) >= {"silhouette", "DBI", "CH", "ukuran_klaster"} and m["timestamp"]
+    assert m["rentang_tahun"].startswith("2013") and m["rentang_tahun"].endswith("2024")
 
 
 def test_cli_menolak_data_rusak(tmp_path):

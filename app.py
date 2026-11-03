@@ -1,7 +1,10 @@
 """Website Geopulse-ID (Flask). Semua angka dibaca dari file di folder data/."""
 
+import hashlib
 import json
 import re
+import threading
+from collections import OrderedDict
 from datetime import datetime
 
 import numpy as np
@@ -9,51 +12,32 @@ import pandas as pd
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, url_for
 
 import config
-from src.pipeline import (CLUSTER_COLORS, CLUSTER_NAMES, CRIT_COLS, CRIT_TYPES, CRITERIA, K_FINAL,
-                          SILHOUETTE_BATAS, W_EXPERT)
-from src.recommend import CATATAN_VALIDASI, rekomendasi
-from src.topsis import shannon_entropy_weights, topsis
+from src.pipeline import (CLUSTER_COLORS, CLUSTER_NAMES, CRIT_COLS, CRITERIA, K_FINAL, SILHOUETTE_BATAS,
+                          W_EXPERT, run_pipeline)
+from src.recommend import CATATAN_VALIDASI, SUMBER, rekomendasi
+from src.tahun import rentang_tahun, tahun_data
+from src.topsis import shannon_entropy_weights
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = config.SECRET_KEY or "dev-only-tidak-untuk-produksi"
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
-# halaman yang sudah tersedia (menu header)
-NAV = [("/", "Ringkasan Eksekutif"), ("/simulasi", "Simulasi Bobot"), ("/komparasi", "Komparasi Wilayah"),
+GITHUB_URL = "https://github.com/Aceranzer/Geopulse-id"
+
+# halaman yang tersedia (menu header)
+NAV = [("/", "Dashboard"), ("/simulasi", "Simulasi Bobot"), ("/komparasi", "Komparasi Wilayah"),
        ("/klaster", "Klaster"), ("/metodologi", "Metodologi & Data")]
 
+PRESET = {"entropi", "sama", "pakar", "kustom"}
+NAMA_PRESET = {"entropi": "Entropi (bawaan)", "sama": "Sama rata", "pakar": "Pakar", "kustom": "Kustom"}
+
+
+# ---------------------------------------------------------------- utilitas
 
 def norm(nama):
     """Normalisasi nama kecamatan untuk mencocokkan CSV dan GeoJSON."""
     return re.sub(r"\s+", " ", str(nama)).strip().upper()
-
-
-def load_table():
-    """Gabungan topsis_result.csv dan clustered_result.csv, urut menurut peringkat."""
-    t = pd.read_csv(config.TOPSIS_CSV)
-    c = pd.read_csv(config.CLUSTERED_CSV)
-    t["key"], c["key"] = t.kecamatan.map(norm), c.kecamatan.map(norm)
-    df = t.merge(c[["key", "cluster_id", "cluster_name", "silhouette_sample"]], on="key", how="left", validate="1:1")
-    assert df.cluster_id.notna().all(), "ada kecamatan tanpa klaster"
-    return df.sort_values("rank_topsis").reset_index(drop=True)
-
-
-def tahun_data():
-    """Tahun yang tersedia pada data kejadian banjir (dari nama file di data/raw)."""
-    files = config.RAW_DIR.glob("*kejadian-bencana-banjir*.xls")
-    return sorted({int(re.search(r"20\d\d", f.name).group()) for f in files})
-
-
-def rentang_tahun(tahun):
-    """[2013..2017, 2019, 2020, 2024] -> '2013–2017, 2019–2020, 2024'."""
-    bagian, awal = [], 0
-    for i in range(1, len(tahun) + 1):
-        if i == len(tahun) or tahun[i] != tahun[i - 1] + 1:
-            a, b = tahun[awal], tahun[i - 1]
-            bagian.append(str(a) if a == b else f"{a}–{b}")
-            awal = i
-    return ", ".join(bagian)
 
 
 def slugify(nama):
@@ -72,14 +56,22 @@ app.jinja_env.filters["angka"] = angka
 app.jinja_env.globals["pdf_css"] = lambda: (config.BASE_DIR / "static" / "css" / "pdf.css").read_text(encoding="utf-8")
 
 
-@app.context_processor
-def inject_layout():
-    return {"nav": NAV}
+def baca_metrics():
+    with open(config.METRICS_JSON, encoding="utf-8") as f:
+        return json.load(f)
 
 
 def versi_data():
-    with open(config.METRICS_JSON, encoding="utf-8") as f:
-        return json.load(f)["timestamp"].replace("T", " ")
+    return baca_metrics()["timestamp"].replace("T", " ")
+
+
+@app.context_processor
+def inject_layout():
+    """Data yang tampil di setiap halaman: menu, metadata data (footer), tautan repo."""
+    tahun = tahun_data(config.RAW_DIR)
+    return {"nav": NAV, "github_url": GITHUB_URL,
+            "meta_data": {"n_tahun": len(tahun), "tahun_awal": tahun[0], "tahun_akhir": tahun[-1],
+                          "rentang": rentang_tahun(tahun), "versi": versi_data()}}
 
 
 def render_pdf(html, base_url):
@@ -91,10 +83,131 @@ def render_pdf(html, base_url):
     return HTML(string=html, base_url=base_url).write_pdf()
 
 
+# ---------------------------------------------------------------- data dasar (bobot entropi)
+
+def load_table():
+    """Gabungan topsis_result.csv dan clustered_result.csv, urut menurut peringkat."""
+    t = pd.read_csv(config.TOPSIS_CSV)
+    c = pd.read_csv(config.CLUSTERED_CSV)
+    t["key"], c["key"] = t.kecamatan.map(norm), c.kecamatan.map(norm)
+    df = t.merge(c[["key", "cluster_id", "cluster_name", "silhouette_sample"]], on="key", how="left", validate="1:1")
+    assert df.cluster_id.notna().all(), "ada kecamatan tanpa klaster"
+    return df.sort_values("rank_topsis").reset_index(drop=True)
+
+
+def bobot():
+    """Bobot entropi (dihitung dari data), sama rata, dan pakar."""
+    X = pd.read_csv(config.TOPSIS_CSV)[CRIT_COLS].values.astype(float)
+    return {"entropi": shannon_entropy_weights(X).tolist(),
+            "sama": [1 / len(CRIT_COLS)] * len(CRIT_COLS),
+            "pakar": W_EXPERT.tolist()}
+
+
+# ---------------------------------------------------------------- pipeline dengan bobot aktif + cache
+
+def validasi_bobot(w):
+    """List 8 angka tidak negatif dengan total > 0 -> array ternormalisasi (jumlah 1). ValueError jika tidak valid."""
+    if not isinstance(w, list) or len(w) != len(CRIT_COLS) or not all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in w):
+        raise ValueError(f"bobot harus berupa {len(CRIT_COLS)} angka")
+    w = np.array(w, dtype=float)
+    if not np.isfinite(w).all() or (w < 0).any() or w.sum() <= 0:
+        raise ValueError("bobot harus angka tidak negatif dengan total lebih dari 0")
+    return w / w.sum()
+
+
+def kunci_bobot(w):
+    return hashlib.sha1(",".join(f"{v:.6f}" for v in w).encode()).hexdigest()
+
+
+def baris_kecamatan(df):
+    """DataFrame hasil (sudah bergabung dengan klaster) -> daftar dict untuk JSON, urut menurut peringkat."""
+    df = df.sort_values("rank_topsis").copy()
+    df["slug"] = df.kecamatan.map(slugify)
+    kolom = list(dict.fromkeys(["rank_topsis", "rank_bawaan", "delta", "kecamatan", "slug", "wilayah", "skor_topsis", "cluster_id",
+                                "cluster_name", "silhouette_sample", "jiwa_per_tahun"] + list(CRITERIA)))
+    return json.loads(df[kolom].to_json(orient="records"))
+
+
+def ringkas_klaster(df):
+    """Ringkasan per klaster (anggota, rata-rata kriteria) untuk halaman Klaster."""
+    rata_semua = df[CRIT_COLS + ["skor_topsis"]].mean()
+    hasil = []
+    for cid, g in df.groupby("cluster_id"):
+        rata = g[CRIT_COLS + ["skor_topsis"]].mean()
+        anggota = [{"kecamatan": r.kecamatan, "rank": int(r.rank_topsis), "silhouette": r.silhouette_sample,
+                    "batas": bool(r.silhouette_sample < SILHOUETTE_BATAS)} for r in g.itertuples()]
+        hasil.append({"cluster_id": int(cid), "nama": g.cluster_name.iloc[0], "warna": CLUSTER_COLORS[int(cid)],
+                      "n": len(g), "rata": rata.to_dict(), "anggota": anggota})
+    return {"klaster": hasil, "rata_semua": rata_semua.to_dict(),
+            "kriteria": [{"kolom": k, **v} for k, v in CRITERIA.items()]}
+
+
+def payload_baseline():
+    """Hasil dengan bobot entropi, dibaca langsung dari CSV (bukan dihitung ulang)."""
+    df = load_table()
+    df["rank_bawaan"], df["delta"] = df.rank_topsis, 0
+    sweep = json.loads(pd.read_csv(config.SWEEP_CSV).to_json(orient="records"))
+    return {"bobot": bobot()["entropi"], "kecamatan": baris_kecamatan(df), "klaster": ringkas_klaster(df),
+            "sweep": sweep, "k_final": K_FINAL, "metrics": baca_metrics()["metrics_baseline"]}
+
+
+def hitung_aktif(w):
+    """Jalankan pipeline penuh (TOPSIS + K-Means + sweep k=2..7) dengan bobot w (sudah ternormalisasi)."""
+    master = pd.read_csv(config.DATA_DIR / "dki_master.csv")
+    topsis_df, clustered_df, info = run_pipeline(master, w)
+    df = topsis_df.merge(clustered_df[["kecamatan", "cluster_id", "cluster_name", "silhouette_sample"]], on="kecamatan")
+    bawaan = pd.read_csv(config.TOPSIS_CSV).set_index("kecamatan").rank_topsis
+    df["rank_bawaan"] = df.kecamatan.map(bawaan)
+    df["delta"] = df.rank_bawaan - df.rank_topsis             # positif = naik peringkat
+    return {"bobot": w.tolist(), "kecamatan": baris_kecamatan(df), "klaster": ringkas_klaster(df),
+            "sweep": json.loads(info["sweep"].reset_index().to_json(orient="records")), "k_final": K_FINAL,
+            "metrics": info["metrics"]}
+
+
+CACHE_MAKS = 20
+_CACHE = OrderedDict()              # kunci SHA1 bobot -> payload (LRU, maks 20)
+_KUNCI_BAWAAN = kunci_bobot(bobot()["entropi"])
+_BAWAAN = payload_baseline()        # diisi saat aplikasi mulai; tidak ikut tergusur dari cache
+_KUNCI = threading.Lock()
+
+
+def dapatkan_payload(w):
+    """Payload untuk bobot w (ternormalisasi); memakai cache, hitung ulang hanya jika belum pernah dihitung."""
+    kunci = kunci_bobot(w)
+    if kunci == _KUNCI_BAWAAN:
+        return _BAWAAN
+    with _KUNCI:
+        if kunci in _CACHE:
+            _CACHE.move_to_end(kunci)
+            return _CACHE[kunci]
+    hasil = hitung_aktif(w)
+    with _KUNCI:
+        _CACHE[kunci] = hasil
+        while len(_CACHE) > CACHE_MAKS:
+            _CACHE.popitem(last=False)
+    return hasil
+
+
+@app.route("/api/pipeline", methods=["POST"])
+def api_pipeline():
+    """Hasil lengkap (peringkat, klaster, sweep, metrik) untuk bobot dari pengguna."""
+    payload = request.get_json(silent=True) or {}
+    preset = payload.get("preset", "kustom")
+    if preset not in PRESET:
+        return jsonify({"galat": "preset tidak dikenal"}), 400
+    try:
+        w = validasi_bobot(payload.get("bobot"))
+    except ValueError as e:
+        return jsonify({"galat": str(e)}), 400
+    return jsonify({**dapatkan_payload(w), "preset": preset})
+
+
+# ---------------------------------------------------------------- halaman
+
 @app.route("/")
 def ringkasan():
     df = load_table()
-    tahun = tahun_data()
+    tahun = tahun_data(config.RAW_DIR)
     stats = {
         "n_kecamatan": len(df),
         "n_kota": df.wilayah.nunique(),
@@ -107,27 +220,27 @@ def ringkasan():
     }
     rek = {i: rekomendasi(i) for i in range(K_FINAL)}
     return render_template("ringkasan.html", stats=stats, top3=df.head(3).to_dict("records"),
-                           colors=CLUSTER_COLORS, rek=rek, catatan=CATATAN_VALIDASI,
+                           colors=CLUSTER_COLORS, rek=rek, catatan=CATATAN_VALIDASI, sumber_rek=SUMBER,
                            kriteria=[{"kolom": k, **v} for k, v in CRITERIA.items()])
 
 
 @app.route("/metodologi")
 def metodologi():
-    with open(config.METRICS_JSON, encoding="utf-8") as f:
-        metrics = json.load(f)
+    metrics = baca_metrics()
     w = bobot()
     tabel_bobot = [{"desc": c["desc"], "dimensi": c["dimensi"], "tipe": c["type"],
                     "entropi": w["entropi"][i] * 100, "sama": w["sama"][i] * 100, "pakar": w["pakar"][i] * 100}
                    for i, c in enumerate(CRITERIA.values())]
     terbesar = max(tabel_bobot, key=lambda r: r["entropi"])
     sw = pd.read_csv(config.SWEEP_CSV).set_index("k")
-    tahun = tahun_data()
+    mb = metrics["metrics_baseline"]
     return render_template(
-        "metodologi.html", metrics=metrics["metrics"], timestamp=metrics["timestamp"], n_kecamatan=metrics["n_kecamatan"],
+        "metodologi.html", metrics=mb, timestamp=metrics["timestamp"], n_kecamatan=metrics["n_kecamatan"],
         tabel_bobot=tabel_bobot, terbesar=terbesar, k_final=K_FINAL,
-        klaster=[{"id": int(i), "nama": CLUSTER_NAMES[int(i)], "n": n} for i, n in metrics["metrics"]["ukuran_klaster"].items()],
+        klaster=[{"id": int(i), "nama": CLUSTER_NAMES[int(i)], "n": n} for i, n in mb["ukuran_klaster"].items()],
         sil_min=sw.silhouette.min(), sil_maks=sw.silhouette.max(), sil_k=sw.silhouette.loc[K_FINAL],
-        n_tahun=len(tahun), rentang_tahun=rentang_tahun(tahun), batas=SILHOUETTE_BATAS, catatan=CATATAN_VALIDASI)
+        n_tahun=len(tahun_data(config.RAW_DIR)), rentang_tahun=metrics["rentang_tahun"],
+        batas=SILHOUETTE_BATAS, catatan=CATATAN_VALIDASI)
 
 
 @app.route("/simulasi")
@@ -137,32 +250,22 @@ def simulasi():
 
 @app.route("/klaster")
 def klaster():
-    return render_template("klaster.html", colors=CLUSTER_COLORS, k_final=K_FINAL, batas=SILHOUETTE_BATAS)
+    mb = baca_metrics()["metrics_baseline"]
+    baseline = [{"nama": CLUSTER_NAMES[int(i)], "n": n} for i, n in mb["ukuran_klaster"].items()]
+    return render_template("klaster.html", colors=CLUSTER_COLORS, k_final=K_FINAL, batas=SILHOUETTE_BATAS, baseline=baseline)
 
 
 @app.route("/komparasi")
 def komparasi():
-    # rekomendasi per klaster; None = belum ditetapkan tim
     rek = {i: rekomendasi(i) for i in range(K_FINAL)}
-    return render_template("komparasi.html", colors=CLUSTER_COLORS, rek=rek, catatan=CATATAN_VALIDASI)
+    return render_template("komparasi.html", colors=CLUSTER_COLORS, rek=rek, catatan=CATATAN_VALIDASI, sumber_rek=SUMBER)
 
+
+# ---------------------------------------------------------------- API baca-saja (bobot bawaan)
 
 @app.route("/api/kecamatan")
 def api_kecamatan():
-    df = load_table()
-    df["slug"] = df.kecamatan.map(slugify)
-    kolom = ["rank_topsis", "kecamatan", "slug", "wilayah", "skor_topsis", "cluster_id", "cluster_name",
-             "silhouette_sample", "jiwa_per_tahun"] + list(CRITERIA)
-    kolom = list(dict.fromkeys(kolom))
-    return jsonify(json.loads(df[kolom].to_json(orient="records")))
-
-
-def bobot():
-    """Bobot entropi (dihitung dari data), sama rata, dan pakar."""
-    X = pd.read_csv(config.TOPSIS_CSV)[CRIT_COLS].values.astype(float)
-    return {"entropi": shannon_entropy_weights(X).tolist(),
-            "sama": [1 / len(CRIT_COLS)] * len(CRIT_COLS),
-            "pakar": W_EXPERT.tolist()}
+    return jsonify(_BAWAAN["kecamatan"])
 
 
 @app.route("/api/kriteria")
@@ -173,62 +276,50 @@ def api_kriteria():
     return jsonify({"kriteria": kriteria, "bobot": bobot(), "data": data})
 
 
-PRESET = {"entropi", "sama", "pakar", "kustom"}
+@app.route("/api/klaster")
+def api_klaster():
+    return jsonify(_BAWAAN["klaster"])
 
 
-def hitung_simulasi(w, preset):
-    """Validasi bobot lalu hitung ulang TOPSIS. Mengembalikan (bobot ternormalisasi, tabel hasil); ValueError jika tidak valid."""
-    if preset not in PRESET:
-        raise ValueError("preset tidak dikenal")
-    if not isinstance(w, list) or len(w) != len(CRIT_COLS) or not all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in w):
-        raise ValueError(f"bobot harus berupa {len(CRIT_COLS)} angka")
-    w = np.array(w, dtype=float)
-    if not np.isfinite(w).all() or (w < 0).any() or w.sum() <= 0:
-        raise ValueError("bobot harus angka tidak negatif dengan total lebih dari 0")
-    w = w / w.sum()
-
-    t = pd.read_csv(config.TOPSIS_CSV)
-    X = t[CRIT_COLS].values.astype(float)
-    skor = topsis(X, w, CRIT_TYPES)[0]
-    rank_baru = pd.Series(skor).rank(ascending=False).astype(int).values
-    hasil = pd.DataFrame({"kecamatan": t.kecamatan, "wilayah": t.wilayah, "rank_bawaan": t.rank_topsis,
-                          "rank_baru": rank_baru, "skor_baru": skor})
-    hasil["delta"] = hasil.rank_bawaan - hasil.rank_baru          # positif = naik peringkat
-    hasil["selisih_mutlak"] = hasil.delta.abs()
-    hasil = hasil.sort_values(["selisih_mutlak", "rank_baru"], ascending=[False, True]).drop(columns="selisih_mutlak")
-    return w, hasil
+@app.route("/api/sweep")
+def api_sweep():
+    return jsonify({"k_final": K_FINAL, "sweep": _BAWAAN["sweep"]})
 
 
-@app.route("/api/simulasi", methods=["POST"])
-def api_simulasi():
-    """Hitung ulang TOPSIS dengan bobot dari pengguna; peringkat bawaan = bobot entropi (topsis_result.csv)."""
-    payload = request.get_json(silent=True) or {}
-    preset = payload.get("preset", "kustom")
+@app.route("/api/geojson")
+def api_geojson():
+    with open(config.GEOJSON, encoding="utf-8") as f:
+        return jsonify(json.load(f))
+
+
+# ---------------------------------------------------------------- cetak dan PDF
+
+def bobot_dari_query():
+    """?w=10,15,... (bobot aktif, opsional) -> array ternormalisasi atau None. 400 jika tidak valid."""
+    mentah = request.args.get("w")
+    if not mentah:
+        return None
     try:
-        w, hasil = hitung_simulasi(payload.get("bobot"), preset)
-    except ValueError as e:
-        return jsonify({"galat": str(e)}), 400
-    return jsonify({"preset": preset, "bobot": w.tolist(), "hasil": json.loads(hasil.to_json(orient="records"))})
+        return validasi_bobot([float(v) for v in mentah.split(",")])
+    except ValueError:
+        abort(400)
 
 
-NAMA_PRESET = {"entropi": "Entropi (bawaan)", "sama": "Sama rata", "pakar": "Pakar", "kustom": "Kustom"}
-
-
-def profil_kecamatan(slug):
+def profil_kecamatan(slug, w=None, preset=None):
     """Data satu kecamatan untuk PDF/cetak; 404 jika slug tidak valid atau tidak ada di CSV."""
     if not re.fullmatch(r"[a-z0-9-]+", slug):
         abort(404)
-    df = load_table()
-    df["slug"] = df.kecamatan.map(slugify)
-    baris = df[df.slug == slug]
-    if baris.empty:
+    payload = dapatkan_payload(w) if w is not None else _BAWAAN
+    baris = [r for r in payload["kecamatan"] if r["slug"] == slug]
+    if not baris:
         abort(404)
-    r = baris.iloc[0]
+    r = baris[0]
     return {
-        "r": r, "n": len(df), "slug": slug,
+        "r": r, "n": len(payload["kecamatan"]), "slug": slug,
         "kriteria": [{"desc": v["desc"], "satuan": v["satuan"], "nilai": r[k], "tipe": v["type"]} for k, v in CRITERIA.items()],
-        "batas": bool(r.silhouette_sample < SILHOUETTE_BATAS),
-        "rekomendasi": rekomendasi(r.cluster_id), "catatan": CATATAN_VALIDASI,
+        "batas": bool(r["silhouette_sample"] < SILHOUETTE_BATAS),
+        "rekomendasi": rekomendasi(r["cluster_id"]), "catatan": CATATAN_VALIDASI, "sumber_rek": SUMBER,
+        "bobot_aktif": NAMA_PRESET.get(preset, "Kustom") if w is not None else None,
         "tanggal": datetime.now().strftime("%d-%m-%Y"), "versi": versi_data(),
     }
 
@@ -236,15 +327,17 @@ def profil_kecamatan(slug):
 @app.route("/cetak/kecamatan/<slug>")
 def cetak_kecamatan(slug):
     """Profil kecamatan sebagai halaman HTML siap cetak (cadangan jika PDF server tidak tersedia)."""
-    return render_template("pdf/kecamatan.html", auto_print=request.args.get("cetak") == "1", **profil_kecamatan(slug))
+    data = profil_kecamatan(slug, bobot_dari_query(), request.args.get("p"))
+    return render_template("pdf/kecamatan.html", auto_print=request.args.get("cetak") == "1", **data)
 
 
 @app.route("/ekspor/kecamatan/<slug>.pdf")
 def pdf_kecamatan(slug):
-    data = profil_kecamatan(slug)
+    w = bobot_dari_query()
+    data = profil_kecamatan(slug, w, request.args.get("p"))
     pdf = render_pdf(render_template("pdf/kecamatan.html", auto_print=False, **data), request.url_root)
     if pdf is None:   # WeasyPrint tidak tersedia: arahkan ke halaman cetak (Ctrl+P / Simpan sebagai PDF)
-        return redirect(url_for("cetak_kecamatan", slug=slug, cetak=1))
+        return redirect(url_for("cetak_kecamatan", slug=slug, cetak=1, **request.args.to_dict()))
     return Response(pdf, mimetype="application/pdf",
                     headers={"Content-Disposition": f"attachment; filename=profil-{slug}.pdf"})
 
@@ -264,46 +357,25 @@ def payload_simulasi():
 @app.route("/ekspor/simulasi.pdf", methods=["POST"])
 def pdf_simulasi():
     bobot_mentah, preset = payload_simulasi()
+    if preset not in PRESET:
+        return jsonify({"galat": "preset tidak dikenal"}), 400
     try:
-        w, hasil = hitung_simulasi(bobot_mentah, preset)
+        w = validasi_bobot(bobot_mentah)
     except ValueError as e:
         return jsonify({"galat": str(e)}), 400
+    baris = dapatkan_payload(w)["kecamatan"]
+    hasil = sorted(({"kecamatan": r["kecamatan"], "wilayah": r["wilayah"], "rank_bawaan": r["rank_bawaan"],
+                     "rank_baru": r["rank_topsis"], "skor_baru": r["skor_topsis"], "delta": r["delta"]} for r in baris),
+                   key=lambda r: (-abs(r["delta"]), r["rank_baru"]))
     konteks = {
-        "preset": NAMA_PRESET[preset], "hasil": hasil.to_dict("records"), "tanggal": datetime.now().strftime("%d-%m-%Y %H:%M"),
+        "preset": NAMA_PRESET[preset], "hasil": hasil, "tanggal": datetime.now().strftime("%d-%m-%Y %H:%M"),
         "bobot": [{"desc": v["desc"], "tipe": v["type"], "persen": float(w[i] * 100)} for i, v in enumerate(CRITERIA.values())],
-        "berubah": int((hasil.delta != 0).sum()), "versi": versi_data(),
+        "berubah": sum(1 for r in hasil if r["delta"] != 0), "versi": versi_data(),
     }
     pdf = render_pdf(render_template("pdf/simulasi.html", auto_print=False, **konteks), request.url_root)
     if pdf is None:   # cadangan: kirim halaman cetak yang otomatis membuka dialog cetak
         return render_template("pdf/simulasi.html", auto_print=True, **konteks)
     return Response(pdf, mimetype="application/pdf", headers={"Content-Disposition": "attachment; filename=simulasi-bobot.pdf"})
-
-
-@app.route("/api/klaster")
-def api_klaster():
-    df = load_table()
-    rata_semua = df[CRIT_COLS + ["skor_topsis"]].mean()
-    hasil = []
-    for cid, g in df.groupby("cluster_id"):
-        rata = g[CRIT_COLS + ["skor_topsis"]].mean()
-        anggota = [{"kecamatan": r.kecamatan, "rank": int(r.rank_topsis), "silhouette": r.silhouette_sample,
-                    "batas": bool(r.silhouette_sample < SILHOUETTE_BATAS)} for r in g.itertuples()]
-        hasil.append({"cluster_id": int(cid), "nama": g.cluster_name.iloc[0], "warna": CLUSTER_COLORS[int(cid)],
-                      "n": len(g), "rata": rata.to_dict(), "anggota": anggota})
-    return jsonify({"klaster": hasil, "rata_semua": rata_semua.to_dict(),
-                    "kriteria": [{"kolom": k, **v} for k, v in CRITERIA.items()]})
-
-
-@app.route("/api/sweep")
-def api_sweep():
-    sw = pd.read_csv(config.SWEEP_CSV)
-    return jsonify({"k_final": K_FINAL, "sweep": json.loads(sw.to_json(orient="records"))})
-
-
-@app.route("/api/geojson")
-def api_geojson():
-    with open(config.GEOJSON, encoding="utf-8") as f:
-        return jsonify(json.load(f))
 
 
 if __name__ == "__main__":
