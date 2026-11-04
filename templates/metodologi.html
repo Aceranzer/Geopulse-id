@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Metodologi & Data · Geopulse-ID{% endblock %}
+
+{% block head %}
+  <style>
+    .prosa { max-width: 1000px; }
+    .prosa h2 { font-size: 22px; margin: 32px 0 8px; }
+    .prosa p, .prosa li { font-size: 16px; line-height: 1.65; }
+    .prosa ul, .prosa ol { padding-left: 22px; margin: 6px 0; }
+    .prosa .table td, .prosa .table th { font-size: 14.5px; vertical-align: top; }
+    .prosa .table td.num, .prosa .table th.num { text-align: right; }
+    .rumus { background: var(--row-alt); border-radius: 6px; padding: 12px 16px; font-family: "Cascadia Mono", Consolas, monospace; font-size: 14px; margin: 8px 0; white-space: pre-wrap; }
+    .catatan { border: 1px solid var(--ink); border-radius: 6px; padding: 12px 16px; font-size: 15px; margin-top: 8px; }
+    .ya { font-weight: 700; } .tidak { color: var(--ink-soft); }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="prosa">
+  <h1>Metodologi &amp; Data</h1>
+  <p class="muted" style="margin:0; color:var(--ink-soft);">
+    Versi data: {{ timestamp.replace("T", " ") }} · {{ n_kecamatan }} kecamatan daratan DKI Jakarta (tanpa Kepulauan Seribu).
+  </p>
+
+  <h2>1. Alur kerja</h2>
+  <ol>
+    <li><b>Tujuan:</b> menentukan kecamatan yang paling perlu diprioritaskan untuk mitigasi banjir.</li>
+    <li><b>Pemeriksaan data:</b> menilai kualitas tiap berkas Satu Data Jakarta.</li>
+    <li><b>Penyiapan data:</b> membersihkan dan menggabungkan data per kecamatan.</li>
+    <li><b>Pemodelan:</b> menghitung peringkat (TOPSIS), lalu mengelompokkan kecamatan (K-Means).</li>
+    <li><b>Evaluasi:</b> mengukur mutu klaster dan menguji pengaruh bobot.</li>
+    <li><b>Penyajian:</b> website ini, membaca hasil dari folder <code>data/</code>.</li>
+  </ol>
+
+  <h2>2. Sumber data</h2>
+  <p>Data kejadian banjir tersedia untuk {{ n_tahun }} tahun: {{ rentang_tahun }}.</p>
+  <div style="overflow-x:auto;">
+  <table class="table">
+    <thead><tr><th>Sumber</th><th>Status</th><th>Keterangan</th></tr></thead>
+    <tbody>
+      <tr><td>Kepadatan &amp; luas wilayah</td><td class="ya">Dipakai</td><td>Penduduk dan kepadatan per kecamatan. Luas memakai nilai 2014 karena 2015–2019 rusak.</td></tr>
+      <tr><td>Kejadian banjir</td><td class="ya">Dipakai</td><td>Dasar kriteria bahaya: seberapa sering, setinggi apa, dan berapa lama banjir terjadi.</td></tr>
+      <tr><td>Alat peringatan dini (EWS)</td><td class="ya">Dipakai</td><td>Titik lokasi dihitung per kecamatan; koordinat tertukar dan duplikat dibersihkan.</td></tr>
+      <tr><td>Batas kecamatan (GeoJSON)</td><td class="ya">Dipakai</td><td>Dasar peta dan pencocokan lokasi.</td></tr>
+      <tr><td>Rekap banjir provinsi</td><td class="tidak">Pembanding</td><td>Hanya tingkat provinsi.</td></tr>
+      <tr><td>Rumah pompa</td><td class="tidak">Belum jadi kriteria</td><td>Sudah dibersihkan dan ada di tabel master, tetapi kriteria tetap 8 sesuai keputusan tim.</td></tr>
+      <tr><td>Meteorologi</td><td class="tidak">Tidak dipakai</td><td>Per stasiun, bukan per kecamatan, dan baru dari 2024.</td></tr>
+      <tr><td>Fasilitas kesehatan</td><td class="tidak">Tidak dipakai</td><td>Hanya sampai tingkat kota.</td></tr>
+      <tr><td>Infrastruktur sumber daya air</td><td class="tidak">Tidak dipakai</td><td>Tingkat provinsi, tanpa lokasi.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>3. Perbaikan data</h2>
+  <ul>
+    <li><b>Warga terdampak:</b> satu catatan dibatasi sebesar jumlah penduduk kelurahannya, dan dihitung sekali per kelurahan per tahun agar warga yang sama tidak terhitung berulang. Hasilnya dinyatakan per 1000 penduduk.</li>
+    <li><b>Luas wilayah:</b> memakai nilai 2014.</li>
+    <li><b>Nama wilayah:</b> penulisan nama diseragamkan agar data dari berkas berbeda dapat digabung.</li>
+  </ul>
+
+  <h2>4. Cara menghitung peringkat (TOPSIS)</h2>
+  <p>Tiap kecamatan dinilai dengan 8 kriteria. Skor risiko (0–1) makin besar bila kecamatan makin dekat dengan kondisi terburuk dan makin jauh dari kondisi terbaik.</p>
+  <div class="rumus">skor = jarak ke kondisi terbaik ÷ (jarak ke terbaik + jarak ke terburuk)</div>
+  <p>Bobot bawaan dihitung dari data (metode entropi): kriteria yang nilainya paling beragam antar-kecamatan mendapat bobot lebih besar. Jadi bila data berubah, bobot dan peringkat ikut bergeser. Bobot saat ini:</p>
+  <div style="overflow-x:auto;">
+  <table class="table">
+    <thead><tr><th>Kriteria</th><th>Dimensi</th><th class="num">Entropi (bawaan)</th><th class="num">Sama rata</th><th class="num">Pakar</th></tr></thead>
+    <tbody>
+    {% for r in tabel_bobot %}
+      <tr><td>{{ r.desc }}</td><td>{{ r.dimensi }}</td><td class="num">{{ "%.1f"|format(r.entropi) }}%</td><td class="num">{{ "%.1f"|format(r.sama) }}%</td><td class="num">{{ "%.1f"|format(r.pakar) }}%</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p>Bobot terbesar: <b>{{ terbesar.desc }}</b> ({{ "%.1f"|format(terbesar.entropi) }}%). Di halaman <a href="/simulasi">Simulasi Bobot</a> Anda dapat melihat peringkat bergeser bila bobot diganti.</p>
+
+  <h2>5. Pengelompokan (K-Means)</h2>
+  <p>Kecamatan dikelompokkan berdasarkan skor risiko, warga terdampak per 1000 penduduk, dan kepadatan penduduk. Klaster 0 memiliki skor rata-rata tertinggi, klaster {{ k_final - 1 }} terendah.</p>
+  <p>Jumlah klaster dipilih {{ k_final }} agar mudah dibaca: empat tingkat prioritas. Grafik pemilihan ada di halaman <a href="/klaster">Klaster</a>; nilai silhouette hampir sama untuk k = 2–7 ({{ "%.3f"|format(sil_min) }}–{{ "%.3f"|format(sil_maks) }}), jadi tidak ada pilihan yang jelas lebih baik.</p>
+  <p>Mutu model akhir: silhouette <b>{{ "%.3f"|format(metrics.silhouette) }}</b>, Davies-Bouldin <b>{{ "%.3f"|format(metrics.DBI) }}</b>, Calinski-Harabasz <b>{{ "%.1f"|format(metrics.CH) }}</b>.
+    Ukuran klaster: {% for k in klaster %}{{ k.nama }} {{ k.n }}{% if not loop.last %}, {% endif %}{% endfor %}.
+    Kecamatan dengan silhouette di bawah {{ batas }} ditandai "kurang pasti" karena berada dekat batas klaster.</p>
+
+  <h2>6. Keterbatasan</h2>
+  <ul>
+    <li>Silhouette {{ "%.2f"|format(metrics.silhouette) }} tergolong lemah: klaster saling berdekatan. Wajar untuk {{ n_kecamatan }} kecamatan; baca klaster sebagai tingkat prioritas, bukan kelompok yang terpisah tegas.</li>
+    <li>Data banjir hanya {{ n_tahun }} dari 12 tahun, dan data 2020 hanya sampai September. Daerah yang jarang melapor bisa tampak lebih aman dari kenyataan.</li>
+    <li>Kepadatan penduduk berasal dari 2019; alat peringatan dini dari 2024–2025.</li>
+    <li>Peringkat sangat bergantung pada bobot. Coba ganti skenario di halaman Simulasi.</li>
+    <li>Model belum memakai ketinggian tanah, curah hujan, atau kondisi saluran air.</li>
+  </ul>
+
+  <h2>7. Etika dan privasi</h2>
+  <p>Data bersifat agregat per kecamatan dan tidak memuat data pribadi. Hasil ini alat bantu, bukan keputusan tunggal, dan mutunya bergantung pada kualitas data sumber.</p>
+  <div class="catatan">{{ catatan }}</div>
+</div>
+{% endblock %}

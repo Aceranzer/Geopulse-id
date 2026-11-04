@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Simulasi Bobot · Geopulse-ID{% endblock %}
+
+{% block head %}
+  <style>
+    .presets { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 16px; }
+    .preset { padding: 8px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); font: 600 13px var(--font); cursor: pointer; color: var(--ink); }
+    .preset.aktif { background: var(--primary); color: var(--primary-ink); border-color: var(--primary); }
+    .slider-row { display: grid; grid-template-columns: 1fr 1.4fr 56px; gap: 12px; align-items: center; padding: 4px 0; font-size: 14px; }
+    .slider-row input[type=range] { width: 100%; }
+    .slider-row b { text-align: right; }
+    .naik { color: #8b0000; font-weight: 600; } .turun { color: #2f7d4f; font-weight: 600; }
+    .table td.num, .table th.num { text-align: right; }
+    .section { margin-top: 24px; }
+    #ringkasan { margin-bottom: 12px; }
+    @media (max-width: 800px) { .slider-row { grid-template-columns: 1fr 56px; } .slider-row input { grid-column: 1 / 3; } }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <h1>Simulasi Bobot</h1>
+  <p class="muted" style="margin:0; color:var(--ink-soft);">
+    Atur seberapa penting tiap kriteria, lalu lihat peringkat kecamatan bergeser.
+  </p>
+
+  <div class="card section">
+    <h2>Skenario bobot</h2>
+    <div class="presets">
+      <button class="preset aktif" data-mode="entropi" type="button">Entropi (bawaan)</button>
+      <button class="preset" data-mode="sama" type="button">Sama rata</button>
+      <button class="preset" data-mode="pakar" type="button">Pakar</button>
+      <button class="preset" data-mode="kustom" type="button">Kustom</button>
+    </div>
+    <div id="sliders"></div>
+    <div class="muted" style="margin-top:8px;">Pilih Kustom untuk menggeser slider. Total otomatis 100%.</div>
+  </div>
+
+  <div class="card section">
+    <h2>Dinamika Pergeseran Peringkat</h2>
+    <div class="muted" style="margin-bottom:8px;">Dibanding peringkat bawaan. Urut dari perubahan terbesar.</div>
+    <div id="ringkasan"></div>
+    <form id="form-pdf" method="post" action="/ekspor/simulasi.pdf" target="_blank" class="no-print" style="margin-bottom:12px;">
+      <input type="hidden" name="payload" id="payload-pdf">
+      <button class="btn" type="submit">Unduh hasil simulasi (PDF)</button>
+    </form>
+    <div style="overflow-x:auto;">
+      <table class="table" id="tabel">
+        <thead><tr><th>Kecamatan</th><th>Kota</th><th class="num">Awal</th><th class="num">Baru</th><th class="num">Skor</th><th>Perubahan</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/simulasi.js') }}"></script>
+{% endblock %}
