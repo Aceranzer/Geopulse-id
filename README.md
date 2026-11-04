@@ -2,7 +2,8 @@
 
 **Pengembangan Sistem Pendukung Keputusan Berbasis Dashboard Analitik dengan Integrasi K-Means Clustering dan TOPSIS untuk Prioritas Mitigasi Banjir di DKI Jakarta**
 
-* **Pipeline Utama:** Data Satu Data Jakarta $\longrightarrow$ Multi-Criteria Decision Making (TOPSIS) $\longrightarrow$ K-Means Clustering $\longrightarrow$ Visualisasi Final $\longrightarrow$ Explainable AI (XAI) $\longrightarrow$ Dashboard Analitik Streamlit *(tahap berikutnya)*
+
+>>>>>>> origin/bobot-aktif
 * **Cakupan Wilayah:** 42 Kecamatan daratan DKI Jakarta (Kabupaten Administrasi Kepulauan Seribu dipisahkan).
 
 ---
@@ -10,6 +11,7 @@
 ## 📁 Struktur Direktori
 
 ```text
+<<<<<<< HEAD
 GeoPulse-id/
 ├── Data/
 │   ├── Raw/                       # File mentah Satu Data Jakarta (.xls) & kecamatan.geojson
@@ -35,6 +37,31 @@ GeoPulse-id/
 │   ├── topsis.py                  # Modul Python mandiri (reusable) fungsi TOPSIS & Entropi
 │   └── xai.py                     # Modul XAI: Shapley eksak TOPSIS & dekomposisi klaster
 └── README.md
+=======
+Geopulse-id/
+├── app.py                         # Website Flask (halaman + API JSON + ekspor PDF)
+├── config.py                      # Path data; SECRET_KEY dari environment variable
+├── requirements.txt               # Semua kebutuhan (notebook + website)
+├── requirements-web.txt           # Kebutuhan minimal website (untuk deploy)
+├── data/
+│   ├── raw/                       # File mentah Satu Data Jakarta (.xls) & kecamatan.geojson
+│   ├── interim/                   # Data antara (diabaikan git; dibuat ulang oleh notebook)
+│   ├── dki_master.csv             # Master dataset 42 kecamatan (hasil 01_data.ipynb)
+│   ├── topsis_result.csv          # Skor & ranking TOPSIS
+│   ├── clustered_result.csv       # Klaster K-Means per kecamatan
+│   ├── k_sweep.csv                # Metrik K-Means untuk k=2..7
+│   ├── metrics.json               # Bobot, silhouette/DBI/CH, ukuran klaster, waktu hitung
+│   └── kecamatan_poly.geojson     # Poligon 42 kecamatan untuk peta website
+├── notebook/                      # 01_data, 02_topsis, 03_kmeans, 04_viz
+├── src/
+│   ├── topsis.py                  # Fungsi TOPSIS & bobot Entropi Shannon
+│   ├── pipeline.py                # TOPSIS + K-Means dari tabel master (juga CLI)
+│   ├── validate.py                # Aturan validasi data
+│   └── recommend.py               # Rekomendasi tindakan per klaster (draf awal)
+├── templates/  static/            # Halaman HTML, CSS, JS (Leaflet, Chart.js)
+├── tests/                         # pytest
+└── docs/                          # DEPLOY.md, UJI_PENGGUNA.md, PANDUAN_PENJELASAN_TOPSIS.md
+>>>>>>> origin/bobot-aktif
 ```
 
 ---
@@ -43,10 +70,18 @@ GeoPulse-id/
 
 ### 1. Instalasi Dependensi
 ```bash
+<<<<<<< HEAD
 pip install pandas numpy scikit-learn scipy geopandas matplotlib seaborn lxml jupyter ipykernel
+=======
+python -m venv .venv
+.venv\Scriptsctivate          # Linux/Mac: source .venv/bin/activate
+pip install -r requirements.txt
+>>>>>>> origin/bobot-aktif
 ```
+Penting: nama folder `data/raw` huruf kecil semua (sistem Linux membedakan huruf besar/kecil).
 
 ### 2. Eksekusi Pipeline Berurutan
+<<<<<<< HEAD
 1. Jalankan `notebook/01_data.ipynb` untuk memproses data mentah menjadi `Data/dki_master.csv`.
 2. Jalankan `notebook/02_topsis.ipynb` untuk menghitung skor risiko TOPSIS dan menghasilkan `Data/topsis_result.csv`.
 3. Jalankan `notebook/03_kmeans.ipynb` untuk mengelompokkan kecamatan ke dalam 4 klaster prioritas mitigasi dan menghasilkan `Data/clustered_result.csv`.
@@ -54,6 +89,39 @@ pip install pandas numpy scikit-learn scipy geopandas matplotlib seaborn lxml ju
 5. Jalankan `notebook/05_xai.ipynb` untuk menjelaskan skor TOPSIS dan penugasan klaster, lalu menghasilkan `Data/xai_*.csv` serta figure 08–11.
 
 > Catatan: `04_viz.ipynb` dan `05_xai.ipynb` menghitung ulang skor TOPSIS dengan `src/topsis.py` dan melakukan *assert* bahwa hasilnya identik dengan `topsis_result.csv`, sehingga tabel dan figure dijamin sinkron dengan data. XAI tidak menambah dependensi baru karena nilai Shapley dihitung eksak dari 2⁸ = 256 koalisi.
+=======
+1. Jalankan `notebook/01_data.ipynb` untuk memproses data mentah menjadi `data/dki_master.csv`.
+2. Jalankan `notebook/02_topsis.ipynb` untuk menghitung skor risiko TOPSIS dan menghasilkan `data/topsis_result.csv`.
+3. Jalankan `notebook/03_kmeans.ipynb` untuk mengelompokkan kecamatan ke dalam 4 klaster prioritas mitigasi.
+4. Jalankan `notebook/04_viz.ipynb` untuk membuat figur final.
+
+### 3. Menjalankan website
+```bash
+python app.py            # buka http://127.0.0.1:5000
+python -m pytest tests   # jalankan semua tes
+```
+Halaman: Ringkasan (`/`), Simulasi Bobot (`/simulasi`), Komparasi Wilayah (`/komparasi`), Klaster (`/klaster`), Metodologi & Data (`/metodologi`).
+Semua angka dibaca dari file di `data/`. Untuk produksi, atur `SECRET_KEY` sebagai environment variable.
+
+Catatan PDF: ekspor PDF memakai WeasyPrint yang butuh pustaka sistem (Pango/Cairo). Jika tidak tersedia (mis. di Windows), tombol PDF otomatis membuka halaman cetak browser ("Simpan sebagai PDF").
+
+### 4. Update data (developer)
+1. Ubah/tambah file di `data/raw/`.
+2. Jalankan ulang `notebook/01_data.ipynb` untuk membangun `data/dki_master.csv`.
+3. Hitung ulang hasil:
+   ```bash
+   python -m src.pipeline --input data/dki_master.csv --output data/
+   ```
+   Data ditolak (dan tidak ada file yang ditulis) bila tidak tepat 42 kecamatan, nama tidak cocok dengan GeoJSON, ada nilai kosong/negatif, atau `jiwa_per_1000` di luar 0–1000.
+4. Cek lokal dengan `python app.py` dan `python -m pytest tests`.
+5. Commit dan push: `git add data/ && git commit -m "Update data: ..." && git push`.
+6. Di server: `git pull`, lalu reload (lihat [docs/DEPLOY.md](docs/DEPLOY.md)).
+
+Catatan: bobot entropi dihitung dari data, sehingga data baru ikut menggeser bobot dan peringkat.
+
+### 5. Deploy
+Panduan lengkap PythonAnywhere ada di [docs/DEPLOY.md](docs/DEPLOY.md); skenario uji pengguna di [docs/UJI_PENGGUNA.md](docs/UJI_PENGGUNA.md).
+>>>>>>> origin/bobot-aktif
 
 ---
 
@@ -120,6 +188,7 @@ Bobot kriteria tidak ditentukan secara subjektif, melainkan dihitung secara obje
 
 ## 🏆 Hasil Peringkat Prioritas TOPSIS (Top 10 Kecamatan)
 
+<<<<<<< HEAD
 | Rank | Kecamatan | Wilayah Kota | Skor TOPSIS ($C_i$) | Klaster | Keterangan Risiko |
 | :---: | :--- | :--- | :---: | :---: | :--- |
 | **1** | **Kebon Jeruk** | Jakarta Barat | **0,832** | Prioritas Tinggi | Frekuensi kejadian tinggi, belum memiliki EWS mandiri |
@@ -136,6 +205,24 @@ Bobot kriteria tidak ditentukan secara subjektif, melainkan dihitung secara obje
 *(Rentang skor seluruh 42 kecamatan: 0,160–0,832. Kesepuluh kecamatan teratas berada di klaster 0 — konsisten dengan Spearman 0,90 pada tahap K-Means.)*
 
 *(Catatan: dalam `topsis_result.csv` juga tersedia kolom `skor_topsis_6kriteria` berbasis 6 kriteria murni banjir & kepadatan. Pada skema tersebut Top 1 adalah **Cengkareng** (0,869) dan Top 2 **Jatinegara** (0,687) — berbeda dari skema 8 kriteria karena kriteria EWS tidak diikutkan.)*
+=======
+| Rank | Kecamatan | Wilayah Kota | Skor TOPSIS ($C_i$) | Data pendukung |
+| :---: | :--- | :--- | :---: | :--- |
+| **1** | **Kebon Jeruk** | Jakarta Barat | **0,832** | 16,2 kali/tahun · air maks 160 cm · 0 alat peringatan dini |
+| **2** | **Tanjung Priok** | Jakarta Utara | **0,717** | 7,6 kali/tahun · air maks 105 cm · 0 alat peringatan dini |
+| **3** | **Tanah Abang** | Jakarta Pusat | **0,707** | 3,1 kali/tahun · air maks 250 cm · 0 alat peringatan dini |
+| **4** | **Penjaringan** | Jakarta Utara | **0,693** | 16,5 kali/tahun · air maks 250 cm · 0 alat peringatan dini |
+| **5** | **Cilandak** | Jakarta Selatan | **0,685** | 10,9 kali/tahun · air maks 200 cm · 0 alat peringatan dini |
+| **6** | **Sawah Besar** | Jakarta Pusat | **0,674** | 1,8 kali/tahun · air maks 70 cm · 0 alat peringatan dini |
+| **7** | **Palmerah** | Jakarta Barat | **0,674** | 3,8 kali/tahun · air maks 150 cm · 0 alat peringatan dini |
+| **8** | **Cilincing** | Jakarta Utara | **0,666** | 10,1 kali/tahun · air maks 180 cm · 0 alat peringatan dini |
+| **9** | **Mampang Prapatan** | Jakarta Selatan | **0,665** | 10,8 kali/tahun · air maks 200 cm · 0 alat peringatan dini |
+| **10** | **Pesanggrahan** | Jakarta Selatan | **0,664** | 8,0 kali/tahun · air maks 200 cm · 0 alat peringatan dini |
+
+*(Tabel dihasilkan dari `data/topsis_result.csv` dengan bobot entropi. Kolom `skor_topsis_6kriteria` memuat skema pembanding 6 kriteria: Top 1 Cengkareng, Top 2 Jatinegara.)*
+
+> **Catatan:** bobot entropi memberi bobot terbesar pada `n_alat_dini` (hampir separuh total), sehingga peringkat sangat sensitif terhadap pilihan bobot (lihat halaman Simulasi Bobot). Ini dicatat sebagai keterbatasan di halaman Metodologi.
+>>>>>>> origin/bobot-aktif
 
 ---
 

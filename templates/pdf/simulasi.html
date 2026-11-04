@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Hasil Simulasi Bobot · Geopulse-ID</title>
+  <style>{{ pdf_css()|safe }}</style>
+</head>
+<body>
+<div class="halaman">
+  <header class="kop">
+    <span class="merek">Geopulse-ID</span>
+    <span class="meta">Hasil Simulasi Bobot · dibuat {{ tanggal }}<br>Versi data: {{ versi }}</span>
+  </header>
+
+  <h1>Simulasi Bobot: {{ preset }}</h1>
+  <div class="sub">{{ berubah }} dari {{ hasil|length }} kecamatan berubah peringkat dibanding peringkat bawaan.</div>
+
+  <h2>Bobot kriteria</h2>
+  <div class="bobot">
+    {% for b in bobot %}<div><span>{{ b.desc }}</span><b>{{ "%.1f"|format(b.persen) }}%</b></div>{% endfor %}
+  </div>
+
+  <h2>Pergeseran peringkat (urut menurut perubahan terbesar)</h2>
+  <table class="sim">
+    <thead><tr><th>Kecamatan</th><th>Kota</th><th class="num">Awal</th><th class="num">Baru</th><th class="num">Skor</th><th>Perubahan</th></tr></thead>
+    <tbody>
+    {% for h in hasil %}
+      <tr>
+        <td>{{ h.kecamatan|title }}</td><td>{{ h.wilayah|title }}</td>
+        <td class="num">{{ h.rank_bawaan }}</td><td class="num">{{ h.rank_baru }}</td><td class="num">{{ "%.3f"|format(h.skor_baru) }}</td>
+        <td>{% if h.delta > 0 %}naik {{ h.delta }}{% elif h.delta < 0 %}turun {{ -h.delta }}{% else %}tetap{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <footer class="kaki">Dibuat {{ tanggal }}. Alat bantu keputusan, bukan keputusan final.</footer>
+</div>
+{% if auto_print %}<script>window.addEventListener("load", () => window.print());</script>{% endif %}
+</body>
+</html>

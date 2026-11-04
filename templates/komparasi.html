@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Komparasi Wilayah · Geopulse-ID{% endblock %}
+
+{% block head %}
+  <style>
+    .pilih { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .pilih select { width: 100%; }
+    .pilih label { font-weight: 700; font-size: 14px; display: block; margin-bottom: 4px; }
+    .ringkas { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+    .ringkas .nama { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .ringkas .angka { display: flex; gap: 24px; margin: 8px 0; }
+    .ringkas .angka b { display: block; font-size: 24px; }
+    .chart-box { position: relative; height: 420px; }
+    .section { margin-top: 24px; }
+    .table td.num, .table th.num { text-align: right; }
+    .placeholder { border: 1px dashed var(--ink-soft); border-radius: 6px; padding: 12px; color: var(--ink-soft); font-size: 14px; }
+    .tindakan { margin: 4px 0 0; padding-left: 18px; font-size: 14px; }
+    #hasil { display: none; }
+    @media (max-width: 800px) { .pilih, .ringkas { grid-template-columns: 1fr; } }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <h1>Komparasi Wilayah</h1>
+
+  <div class="card">
+    <div class="pilih">
+      <div><label for="selA">Kecamatan A (primer)</label><select id="selA"></select></div>
+      <div><label for="selB">Kecamatan B (pembanding)</label><select id="selB"></select></div>
+    </div>
+    <div class="muted" id="petunjuk" style="margin-top:12px;">Pilih dua kecamatan untuk membandingkannya.</div>
+  </div>
+
+  <div id="hasil">
+    <div class="ringkas" id="ringkas"></div>
+
+    <div class="card section">
+      <h2>Perbandingan kriteria</h2>
+      <div class="muted">Skala 0–1 dibanding semua kecamatan (0 = terendah, 1 = tertinggi). Alat peringatan dini: makin sedikit, makin berisiko.</div>
+      <div class="chart-box" style="margin-top:12px;"><canvas id="grafik"></canvas></div>
+    </div>
+
+    <div class="card section">
+      <h2>Nilai sebenarnya</h2>
+      <div style="overflow-x:auto;">
+        <table class="table" id="tabel-asli">
+          <thead><tr><th>Kriteria</th><th>Satuan</th><th class="num" id="thA"></th><th class="num" id="thB"></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card section">
+      <h2>Prioritas Tindakan</h2>
+      <div class="muted">{{ catatan }}</div>
+      <div class="ringkas" id="tindakan" style="margin-top:8px;"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script>
+    window.KLASTER_WARNA = {{ colors|tojson }};
+    window.REKOMENDASI = {{ rek|tojson }};   // null = belum ditetapkan tim
+  </script>
+  <script src="{{ url_for('static', filename='js/komparasi.js') }}"></script>
+{% endblock %}

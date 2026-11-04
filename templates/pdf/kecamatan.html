@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Profil {{ r.kecamatan|title }} · Geopulse-ID</title>
+  <style>{{ pdf_css()|safe }}</style>
+</head>
+<body>
+<div class="halaman">
+  <header class="kop">
+    <span class="merek">Geopulse-ID</span>
+    <span class="meta">Profil Kecamatan · dicetak {{ tanggal }}<br>Versi data: {{ versi }}</span>
+  </header>
+
+  <h1>{{ r.kecamatan|title }}</h1>
+  <div class="sub">{{ r.wilayah|title }}</div>
+
+  <div class="ringkas">
+    <div><span>Peringkat prioritas</span><b>#{{ r.rank_topsis|int }} dari {{ n }}</b></div>
+    <div><span>Skor risiko (0–1)</span><b>{{ "%.3f"|format(r.skor_topsis) }}</b></div>
+    <div><span>Klaster</span><b>{{ r.cluster_id|int }} · {{ r.cluster_name }}</b></div>
+  </div>
+  {% if batas %}<div class="sub">Kecamatan batas: posisi klasternya kurang pasti.</div>{% endif %}
+
+  <h2>Kriteria penilaian</h2>
+  <table>
+    <thead><tr><th>Kriteria</th><th>Satuan</th><th class="num">Nilai</th></tr></thead>
+    <tbody>
+    {% for k in kriteria %}
+      <tr><td>{{ k.desc }}</td><td>{{ k.satuan }}</td><td class="num">{{ k.nilai|angka }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Prioritas tindakan</h2>
+  {% if rekomendasi %}
+    <ul>
+    {% for t in rekomendasi %}<li>{{ t.tindakan }} (prioritas {{ t.prioritas }})</li>{% endfor %}
+    </ul>
+    <div class="catatan">{{ catatan }}</div>
+  {% else %}
+    <div class="catatan">Rekomendasi belum ditetapkan.</div>
+  {% endif %}
+
+  <footer class="kaki">Alat bantu keputusan, bukan keputusan final. Sumber data: Satu Data Jakarta.</footer>
+</div>
+{% if auto_print %}<script>window.addEventListener("load", () => window.print());</script>{% endif %}
+</body>
+</html>

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Ringkasan Eksekutif · Geopulse-ID{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    #peta { border-radius: 6px; }
+    .legenda-topo { background: rgba(255,255,255,.9); padding: 6px 8px; border-radius: 4px; font-size: 13px; width: 200px; }
+    .legenda-topo .bar { height: 8px; border-radius: 2px; background: linear-gradient(to right, #f2f2f2, #8a8a8a); border: 1px solid #bbb; }
+    .legenda-topo .teks { display: flex; justify-content: space-between; margin-top: 2px; }
+    .legend-klaster { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; font-size: 14px; }
+    .legend-klaster i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+    .tools { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
+    .tools input[type=search] { flex: 1; }
+    .table th.sortable { cursor: pointer; white-space: nowrap; }
+    .table td.num, .table th.num { text-align: right; }
+    .section { margin-top: 24px; }
+    tr.klik { cursor: pointer; } tr.klik:hover { background: #e4e4e4 !important; }
+    #detail { border: 1px solid var(--ink); border-radius: var(--radius); padding: 24px; width: min(560px, 94vw); max-height: 90vh; }
+    #detail::backdrop { background: rgba(0,0,0,.35); }
+    #detail h3 { font-size: 15px; margin: 16px 0 4px; }
+    .detail-ringkas { display: flex; gap: 12px; margin: 12px 0; }
+    .detail-ringkas > div { flex: 1; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+    .detail-ringkas span { display: block; font-size: 14px; } .detail-ringkas b { font-size: 18px; }
+    #detail .table td { padding: 6px 4px; } #detail ul { padding-left: 18px; font-size: 14px; }
+    .placeholder { border: 1px dashed var(--ink-soft); border-radius: 6px; padding: 10px; color: var(--ink-soft); font-size: 14px; }
+    #detail-tutup { float: right; }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <h1>Ringkasan Eksekutif</h1>
+
+  <div class="grid grid-4">
+    <div class="card stat">
+      <div class="label">Cakupan Analisis</div>
+      <div class="num">{{ stats.n_kecamatan }} Kecamatan</div>
+      <div class="foot"><span>{{ stats.n_kota }} kota administrasi</span></div>
+    </div>
+    <div class="card stat">
+      <div class="label">Prioritas Tinggi</div>
+      <div class="num">{{ stats.n_prioritas }} Kecamatan</div>
+      <div class="foot"><span>Prioritas tertinggi</span></div>
+    </div>
+    <div class="card stat">
+      <div class="label">Rata-rata Kejadian/Tahun</div>
+      <div class="num">{{ "%.1f"|format(stats.kejadian_rata) }}</div>
+      <div class="foot"><span>per kecamatan · data {{ stats.n_tahun }} tahun ({{ stats.rentang_tahun }})</span></div>
+    </div>
+    <div class="card stat">
+      <div class="label">Indeks Risiko Regional</div>
+      <div class="num">{{ "%.2f"|format(stats.skor_min) }} – {{ "%.2f"|format(stats.skor_maks) }}</div>
+      <div class="foot"><span>skor risiko terendah–tertinggi</span></div>
+    </div>
+  </div>
+
+  <div class="peta-prioritas">
+  <div class="card section">
+    <h2>Peta Prioritas Kecamatan</h2>
+    <div class="muted">Warna = tingkat prioritas. Arahkan kursor ke kecamatan.</div>
+    <div id="peta" style="margin-top:12px;"></div>
+    <div class="legend-klaster" id="legend"></div>
+  </div>
+
+  <div class="card section">
+    <h2>Daftar Prioritas Utama</h2>
+    <div class="muted" style="margin-bottom:12px;">3 kecamatan dengan risiko tertinggi</div>
+    {% for r in top3 %}
+      <div class="rank-row">
+        <span class="no">#{{ r.rank_topsis }}</span>
+        <span class="name"><b>{{ r.kecamatan|title }}</b> · {{ r.wilayah|title }}<br>
+          {{ "%.1f"|format(r.kejadian_per_tahun) }} kali banjir/tahun · air maks {{ r.tinggi_max_cm|int }} cm · skor {{ "%.3f"|format(r.skor_topsis) }}</span>
+        <span class="pill c{{ r.cluster_id|int }}">{{ r.cluster_name }}</span>
+      </div>
+    {% endfor %}
+  </div>
+  </div>
+
+  <div class="card section">
+    <h2>Semua {{ stats.n_kecamatan }} Kecamatan</h2>
+    <div class="tools no-print">
+      <input type="search" id="cari" placeholder="Cari kecamatan atau kota...">
+      <label class="muted">Baris
+        <select id="jumlah"><option>10</option><option>25</option><option>50</option></select>
+      </label>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="table" id="tabel">
+        <thead><tr id="thead"></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="pager" id="pager" style="margin-top:12px;"></div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <dialog id="detail" class="no-print">
+    <button class="btn" id="detail-tutup" type="button" style="padding:4px 10px;">Tutup</button>
+    <div id="detail-isi"></div>
+  </dialog>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    window.KLASTER_WARNA = {{ colors|tojson }};
+    window.REKOMENDASI = {{ rek|tojson }};
+    window.CATATAN = {{ catatan|tojson }};
+    window.KRITERIA = {{ kriteria|tojson }};
+  </script>
+  <script src="{{ url_for('static', filename='js/ringkasan.js') }}"></script>
+{% endblock %}
