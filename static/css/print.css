@@ -5,7 +5,7 @@ body { font-size: 12px; color: #000; background: #fff; }
 .container, .topbar .container { max-width: none; padding: 0; }
 
 /* sembunyikan elemen interaktif */
-.topbar, .footer, .nav, .btn, .pager, .tools, .presets, .no-print,
+.topbar, .footer, .nav, .banner-bobot, .toast, .btn, .pager, .tools, .presets, .no-print,
 .leaflet-control-zoom, .leaflet-control-layers, select, input[type=search] { display: none !important; }
 input[type=range] { display: none !important; }
 .slider-row { grid-template-columns: 1fr 56px !important; }

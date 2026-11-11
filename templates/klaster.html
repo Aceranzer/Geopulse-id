@@ -24,6 +24,11 @@
     Kecamatan dikelompokkan menjadi {{ k_final }} tingkat prioritas menurut skor risiko, warga terdampak, dan kepadatan. Klaster 0 = risiko tertinggi.
   </p>
 
+  <p class="muted" style="margin:0 0 16px;">
+    <span id="status-bobot"></span>
+    Baseline (bobot entropi): {% for b in baseline %}{{ b.n }} {{ b.nama }}{% if not loop.last %}, {% endif %}{% endfor %}.
+  </p>
+
   <div class="grid grid-2" id="kartu"></div>
   <p class="muted" style="margin-top:12px;">
     <span class="batas">▲</span> Kecamatan batas: posisi klasternya kurang pasti.

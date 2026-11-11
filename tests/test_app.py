@@ -18,7 +18,7 @@ def main():
     html = r.get_data(as_text=True)
     n_prior = int((k.cluster_id == 0).sum())
     kejadian = f"{t.kejadian_per_tahun.mean():.1f}"
-    assert f"{len(t)} Kecamatan" in html and f"{n_prior} Kecamatan" in html and kejadian in html and "Rata-rata Kejadian/Tahun" in html and "Print Document" not in html
+    assert f"{len(t)} Kecamatan" in html and f'id="kpi-prioritas">{n_prior}<' in html and kejadian in html and "Rata-rata Kejadian/Tahun" in html and "Print Document" not in html
     assert f"{t.skor_topsis.min():.2f} – {t.skor_topsis.max():.2f}" in html
     top3 = k.sort_values("rank_topsis").head(3).kecamatan.str.title().tolist()
     assert all(n in html for n in top3), top3
@@ -68,6 +68,9 @@ def main():
     for i in range(4):
         daftar = rekomendasi(i)
         assert daftar and all({"tindakan", "prioritas", "sumber"} <= set(x) for x in daftar), i
+        assert 4 <= len(daftar) <= 6, (i, len(daftar))                       # plan: 4-6 tindakan per klaster
+        assert all(x["prioritas"] in {"tinggi", "sedang", "rendah"} for x in daftar)
+        assert len({x["tindakan"] for x in daftar}) == len(daftar)           # tidak ada tindakan ganda
     assert rekomendasi(99) is None
     assert CATATAN_VALIDASI.split(";")[0] in c.get("/komparasi").get_data(as_text=True)
     # metodologi: angka berasal dari data/metrics.json dan bobot aktif
@@ -78,8 +81,28 @@ def main():
     html = r.get_data(as_text=True)
     assert f"{mt['metrics_baseline']['silhouette']:.3f}" in html and f"{max(mt['weights']['entropi']) * 100:.1f}%" in html
     assert mt["rentang_tahun"] in html
+    # tabel arti kriteria memuat contoh kecamatan dari data (nilai tertinggi tiap kriteria)
+    tt = pd.read_csv(config.TOPSIS_CSV)
+    from src.pipeline import CRITERIA as _CR
+    for kol, v in _CR.items():
+        assert v["desc"] in html and tt.loc[tt[kol].idxmax(), "kecamatan"].title() in html, kol
+    assert "Arti tiap kriteria" in html and "Mengulang analisis" in html and 'class="alur"' in html
     assert f"{mt['n_kecamatan']} kecamatan" in html
     assert "print.css" in c.get("/").get_data(as_text=True)
+    # framing + bobot aktif: judul, pengantar, footer berisi metadata data, banner/skrip bobot aktif di semua halaman
+    from src.tahun import tahun_data as _td
+    ty2 = _td(config.RAW_DIR)
+    home = c.get("/").get_data(as_text=True)
+    assert "Dashboard Prioritas Mitigasi" in home and f"berdasarkan {8} kriteria risiko banjir" in home
+    for url in ["/", "/simulasi", "/komparasi", "/klaster", "/metodologi"]:
+        h = c.get(url).get_data(as_text=True)
+        assert 'id="banner-bobot"' in h and "js/bobot-aktif.js" in h, url
+        assert f"Data banjir {ty2[0]}–{ty2[-1]} ({len(ty2)} tahun tersedia)" in h and "github.com/Aceranzer/Geopulse-id" in h, url
+        assert "UKRIDA" in h and "Satu Data Jakarta" in h, url
+    kl = c.get("/klaster").get_data(as_text=True)
+    ukuran_baseline = json.load(open(config.METRICS_JSON, encoding="utf-8"))["metrics_baseline"]["ukuran_klaster"]
+    assert "Baseline (bobot entropi): " + ", ".join(f"{n} {nm}" for n, nm in zip(ukuran_baseline.values(), ["Prioritas Tinggi", "Waspada", "Menengah", "Rendah"])) in kl
+    assert 'id="btn-terapkan"' in c.get("/simulasi").get_data(as_text=True)
     print("LULUS")
 
 

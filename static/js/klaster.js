@@ -34,11 +34,16 @@ function grafik(id, label, nilai, ks, kFinal, warna) {
   });
 }
 
-fetch("/api/klaster").then(r => r.json()).then(d => {
+window.BobotAktif.muatData().then(hasil => {
+  const d = { ...hasil.klaster };
   document.getElementById("kartu").innerHTML = d.klaster.map(k => kartu(k, d.rata_semua, d.kriteria)).join("");
+  document.getElementById("status-bobot").textContent = hasil.aktif
+    ? `Klaster di bawah mengikuti bobot aktif (${window.BobotAktif.NAMA[hasil.preset]}).`
+    : "Klaster di bawah memakai bobot bawaan (entropi).";
+  grafikPemilihanK({ sweep: hasil.sweep, k_final: hasil.k_final });
 });
 
-fetch("/api/sweep").then(r => r.json()).then(d => {
+function grafikPemilihanK(d) {
   const ks = d.sweep.map(r => r.k);
   grafik("elbow", "Inertia", d.sweep.map(r => r.inertia), ks, d.k_final, "#555555");
   grafik("sil", "Silhouette", d.sweep.map(r => r.silhouette), ks, d.k_final, "#555555");
@@ -47,4 +52,4 @@ fetch("/api/sweep").then(r => r.json()).then(d => {
   document.getElementById("catatan-k").textContent =
     `Titik merah: k = ${d.k_final} (silhouette ${sil[d.k_final].toFixed(3)}). Nilainya hampir sama untuk semua k (selisih ${rentang.toFixed(3)}), ` +
     `jadi k = ${d.k_final} dipilih agar mudah dibaca: empat tingkat prioritas.`;
-});
+}

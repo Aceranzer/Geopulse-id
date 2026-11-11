@@ -35,9 +35,9 @@
   <h2>Prioritas tindakan</h2>
   {% if rekomendasi %}
     <ul>
-    {% for t in rekomendasi %}<li>{{ t.tindakan }} (prioritas {{ t.prioritas }})</li>{% endfor %}
+    {% for t in rekomendasi %}<li><b>[{{ t.prioritas }}]</b> {{ t.tindakan }}</li>{% endfor %}
     </ul>
-    <div class="catatan">{{ catatan }}</div>
+    <div class="catatan">{{ catatan }}<br>Sumber: {{ sumber_rek }}</div>
   {% else %}
     <div class="catatan">Rekomendasi belum ditetapkan.</div>
   {% endif %}
