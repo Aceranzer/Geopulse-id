@@ -1,5 +1,10 @@
-"""Tahun yang tersedia pada data kejadian banjir (dibaca dari nama berkas di data/raw)."""
+"""Tahun yang tersedia pada data kejadian banjir.
 
+Diambil dari nama berkas di data/raw (saat dev). Jika folder raw kosong/tidak ada
+(mis. server deploy tidak memuat berkas .xls), dibaca dari data/metrics.json.
+"""
+
+import json
 import re
 from pathlib import Path
 
@@ -7,7 +12,38 @@ from pathlib import Path
 def tahun_data(raw_dir):
     """Daftar tahun terurut, mis. [2013, ..., 2017, 2019, 2020, 2024]."""
     files = Path(raw_dir).glob("*kejadian-bencana-banjir*.xls")
-    return sorted({int(re.search(r"20\d\d", f.name).group()) for f in files})
+    tahun = sorted({int(re.search(r"20\d\d", f.name).group()) for f in files})
+    if tahun:
+        return tahun
+    return _dari_metrics(Path(raw_dir).parent / "metrics.json")
+
+
+def _dari_metrics(metrics_path):
+    """Cadangan: parse rentang_tahun di metrics.json ('2013–2017, 2019–2020, 2024')."""
+    if not Path(metrics_path).exists():
+        return []
+    try:
+        with open(metrics_path, encoding="utf-8") as f:
+            s = json.load(f).get("rentang_tahun", "")
+    except (OSError, ValueError):
+        return []
+    hasil = set()
+    for bagian in s.split(","):
+        bagian = bagian.strip().replace("–", "-").replace("—", "-")
+        if not bagian:
+            continue
+        if "-" in bagian:
+            a, b = bagian.split("-", 1)
+            try:
+                hasil.update(range(int(a), int(b) + 1))
+            except ValueError:
+                continue
+        else:
+            try:
+                hasil.add(int(bagian))
+            except ValueError:
+                continue
+    return sorted(hasil)
 
 
 def rentang_tahun(tahun):
