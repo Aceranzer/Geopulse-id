@@ -59,8 +59,8 @@ function tampil() {
   });
 }
 
-Promise.all([fetch("/api/kecamatan").then(r => r.json()), fetch("/api/kriteria").then(r => r.json())]).then(([k, kr]) => {
-  rows = k; kriteria = kr.kriteria;
+window.BobotAktif.muatData().then(hasil => {
+  rows = hasil.kecamatan; kriteria = hasil.klaster.kriteria;
   const opsi = '<option value="">— pilih kecamatan —</option>' +
     [...rows].sort((x, y) => x.kecamatan.localeCompare(y.kecamatan)).map(r => `<option>${esc(r.kecamatan)}</option>`).join("");
   selA.innerHTML = selB.innerHTML = opsi;

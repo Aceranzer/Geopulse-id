@@ -18,7 +18,7 @@ def main():
     html = r.get_data(as_text=True)
     n_prior = int((k.cluster_id == 0).sum())
     kejadian = f"{t.kejadian_per_tahun.mean():.1f}"
-    assert f"{len(t)} Kecamatan" in html and f"{n_prior} Kecamatan" in html and kejadian in html and "Rata-rata Kejadian/Tahun" in html and "Print Document" not in html
+    assert f"{len(t)} Kecamatan" in html and f'id="kpi-prioritas">{n_prior}<' in html and kejadian in html and "Rata-rata Kejadian/Tahun" in html and "Print Document" not in html
     assert f"{t.skor_topsis.min():.2f} – {t.skor_topsis.max():.2f}" in html
     top3 = k.sort_values("rank_topsis").head(3).kecamatan.str.title().tolist()
     assert all(n in html for n in top3), top3
@@ -80,6 +80,20 @@ def main():
     assert mt["rentang_tahun"] in html
     assert f"{mt['n_kecamatan']} kecamatan" in html
     assert "print.css" in c.get("/").get_data(as_text=True)
+    # framing + bobot aktif: judul, pengantar, footer berisi metadata data, banner/skrip bobot aktif di semua halaman
+    from src.tahun import tahun_data as _td
+    ty2 = _td(config.RAW_DIR)
+    home = c.get("/").get_data(as_text=True)
+    assert "Dashboard Prioritas Mitigasi" in home and f"berdasarkan {8} kriteria risiko banjir" in home
+    for url in ["/", "/simulasi", "/komparasi", "/klaster", "/metodologi"]:
+        h = c.get(url).get_data(as_text=True)
+        assert 'id="banner-bobot"' in h and "js/bobot-aktif.js" in h, url
+        assert f"Data banjir {ty2[0]}–{ty2[-1]} ({len(ty2)} tahun tersedia)" in h and "github.com/Aceranzer/Geopulse-id" in h, url
+        assert "UKRIDA" in h and "Satu Data Jakarta" in h, url
+    kl = c.get("/klaster").get_data(as_text=True)
+    ukuran_baseline = json.load(open(config.METRICS_JSON, encoding="utf-8"))["metrics_baseline"]["ukuran_klaster"]
+    assert "Baseline (bobot entropi): " + ", ".join(f"{n} {nm}" for n, nm in zip(ukuran_baseline.values(), ["Prioritas Tinggi", "Waspada", "Menengah", "Rendah"])) in kl
+    assert 'id="btn-terapkan"' in c.get("/simulasi").get_data(as_text=True)
     print("LULUS")
 
 

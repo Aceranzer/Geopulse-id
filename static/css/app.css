@@ -32,3 +32,17 @@ input[type=search], select, input[type=text], input[type=file] { font-size: 15px
 .pager { font-size: 14px; }
 .pager .page { width: 32px; height: 32px; font-size: 14px; }
 .footer { font-size: 14px; padding: 20px 0; }
+
+/* ---- banner bobot aktif, toast, footer ---- */
+.banner-bobot { background: #e6f0fb; border-bottom: 1px solid #b7d1ee; color: #1b3b5f; font-size: 15px; cursor: pointer; }
+.banner-bobot[hidden] { display: none; }
+.banner-bobot .container { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 8px; padding-bottom: 8px; flex-wrap: wrap; }
+.banner-bobot:hover { background: #dbe9f9; }
+.btn-kecil { border: 1px solid #1b3b5f; background: #fff; color: #1b3b5f; border-radius: 6px; padding: 4px 12px; font: 600 14px var(--font); cursor: pointer; }
+.btn-kecil:hover { background: #f1f6fc; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #111; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 15px; z-index: 2000; max-width: 92vw; box-shadow: 0 4px 16px rgba(0,0,0,.25); }
+.toast[hidden] { display: none; }
+.toast a { color: #fff; text-decoration: underline; margin-left: 8px; }
+.footer-grid { display: grid; grid-template-columns: 1.2fr 1.4fr 1fr; gap: 24px; line-height: 1.6; }
+.footer a { color: inherit; }
+@media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr; gap: 12px; } }

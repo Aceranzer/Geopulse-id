@@ -21,13 +21,38 @@
     </div>
   </header>
 
+  <!-- tampil hanya bila ada bobot aktif (diatur oleh bobot-aktif.js) -->
+  <div id="banner-bobot" class="banner-bobot no-print" role="link" tabindex="0" hidden>
+    <div class="container">
+      <span>ⓘ Bobot aktif: <b id="banner-nama"></b> · klik untuk ubah</span>
+      <button type="button" id="banner-reset" class="btn-kecil">Reset ke bawaan</button>
+    </div>
+  </div>
+
   <main class="container" style="padding-top:24px; padding-bottom:32px;">
     {% block content %}{% endblock %}
   </main>
 
   <footer class="footer">
-    <div class="container"><b>Geopulse-ID</b> Sistem Prioritas Mitigasi Risiko Banjir Multi-Kriteria</div>
+    <div class="container footer-grid">
+      <div>
+        <b>Geopulse-ID</b> · Sistem Prioritas Mitigasi Risiko Banjir Multi-Kriteria<br>
+        Proyek mahasiswa UKRIDA (SPK + Data Mining 2026).
+      </div>
+      <div>
+        Sumber data: <a href="https://data.jakarta.go.id" target="_blank" rel="noopener">Satu Data Jakarta</a> · BPBD Provinsi DKI Jakarta<br>
+        Data banjir {{ meta_data.tahun_awal }}–{{ meta_data.tahun_akhir }} ({{ meta_data.n_tahun }} tahun tersedia) · versi data {{ meta_data.versi }}
+      </div>
+      <div>
+        <a href="{{ github_url }}" target="_blank" rel="noopener">Kode sumber (GitHub)</a><br>
+        <a href="/metodologi">Metodologi &amp; Data</a>
+      </div>
+    </div>
   </footer>
+
+  <div id="toast" class="toast no-print" role="status" aria-live="polite" hidden></div>
+
+  <script src="{{ url_for('static', filename='js/bobot-aktif.js') }}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
