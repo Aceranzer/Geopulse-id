@@ -224,6 +224,25 @@ def ringkasan():
                            kriteria=[{"kolom": k, **v} for k, v in CRITERIA.items()])
 
 
+def interpretasi_kriteria():
+    """Arti tiap kriteria + contoh kecamatan bernilai tertinggi dan terendah (dari topsis_result.csv)."""
+    t = pd.read_csv(config.TOPSIS_CSV).set_index("kecamatan")
+    hasil = []
+    for kolom, v in CRITERIA.items():
+        s = t[kolom].sort_values(ascending=False)
+        tinggi = ", ".join(f"{n.title()} ({angka(x)})" for n, x in s.head(2).items())
+        minimum = s.min()
+        n_min = int((s == minimum).sum())
+        if n_min > 2:     # banyak kecamatan berbagi nilai terendah (mis. 0 alat peringatan dini)
+            rendah = f"{n_min} kecamatan bernilai {angka(minimum)}"
+        else:
+            rendah = ", ".join(f"{n.title()} ({angka(x)})" for n, x in s.tail(2)[::-1].items())
+        hasil.append({"desc": v["desc"], "dimensi": v["dimensi"], "satuan": v["satuan"],
+                      "arah": "Makin sedikit, makin berisiko" if v["type"] == "cost" else "Makin tinggi, makin berisiko",
+                      "tinggi": tinggi, "rendah": rendah})
+    return hasil
+
+
 @app.route("/metodologi")
 def metodologi():
     metrics = baca_metrics()
@@ -236,7 +255,7 @@ def metodologi():
     mb = metrics["metrics_baseline"]
     return render_template(
         "metodologi.html", metrics=mb, timestamp=metrics["timestamp"], n_kecamatan=metrics["n_kecamatan"],
-        tabel_bobot=tabel_bobot, terbesar=terbesar, k_final=K_FINAL,
+        tabel_bobot=tabel_bobot, terbesar=terbesar, k_final=K_FINAL, interpretasi=interpretasi_kriteria(),
         klaster=[{"id": int(i), "nama": CLUSTER_NAMES[int(i)], "n": n} for i, n in mb["ukuran_klaster"].items()],
         sil_min=sw.silhouette.min(), sil_maks=sw.silhouette.max(), sil_k=sw.silhouette.loc[K_FINAL],
         n_tahun=len(tahun_data(config.RAW_DIR)), rentang_tahun=metrics["rentang_tahun"],

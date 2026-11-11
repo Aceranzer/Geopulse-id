@@ -42,7 +42,7 @@ function buatPeta(geo) {
     },
   }).addTo(peta);
 
-  L.control.layers(null, { "Topografi (hillshade)": hillshade, "Klaster prioritas": klaster }, { collapsed: false }).addTo(peta);
+  L.control.layers(null, { "Topografi (hillshade)": hillshade, "Klaster prioritas": klaster }, { collapsed: window.innerWidth < 700 }).addTo(peta);
 
   const legendaTopo = L.control({ position: "bottomright" });
   legendaTopo.onAdd = () => {
@@ -154,9 +154,9 @@ function bukaDetail(slug) {
     <table class="table"><tbody>${window.KRITERIA.map(k =>
       `<tr><td>${esc(k.desc)}</td><td class="muted">${esc(k.satuan)}</td><td class="num">${nilaiId(r[k.kolom])}</td></tr>`).join("")}</tbody></table>
     <h3>Prioritas tindakan</h3>
-    ${tindakan ? `<ul>${tindakan.map(t => `<li>${esc(t.tindakan)} <span class="muted">(prioritas ${esc(t.prioritas)})</span></li>`).join("")}</ul>`
+    ${tindakan ? `<ul>${tindakan.map(t => `<li><span class="prio ${esc(t.prioritas)}">${esc(t.prioritas)}</span> ${esc(t.tindakan)}</li>`).join("")}</ul>`
                : '<div class="placeholder">Rekomendasi belum ditetapkan.</div>'}
-    <div class="muted" style="margin-top:6px">${esc(window.CATATAN)}</div>
+    <div class="muted" style="margin-top:6px">${esc(window.CATATAN)}<br>Sumber: ${esc(window.SUMBER_REK)}</div>
     <div style="margin-top:14px"><a class="btn" href="/ekspor/kecamatan/${esc(r.slug)}.pdf${window.BobotAktif.queryPdf()}">Unduh profil (PDF)</a></div>`;
   dlg.showModal();
 }

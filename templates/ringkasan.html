@@ -25,6 +25,7 @@
     #detail .table td { padding: 6px 4px; } #detail ul { padding-left: 18px; font-size: 14px; }
     .placeholder { border: 1px dashed var(--ink-soft); border-radius: 6px; padding: 10px; color: var(--ink-soft); font-size: 14px; }
     #detail-tutup { float: right; }
+    @media (max-width: 700px) { #detail { width: 100vw; max-width: 100vw; height: 100vh; max-height: 100vh; margin: 0; border-radius: 0; border: 0; padding: 16px; } .detail-ringkas { flex-wrap: wrap; } .detail-ringkas > div { flex: 1 1 140px; } }   /* detail layar penuh di ponsel */
   </style>
 {% endblock %}
 
@@ -91,7 +92,7 @@
       </label>
     </div>
     <div style="overflow-x:auto;">
-      <table class="table" id="tabel">
+      <table class="table tabel-lekat-2" id="tabel">
         <thead><tr id="thead"></tr></thead>
         <tbody></tbody>
       </table>
@@ -110,6 +111,7 @@
     window.KLASTER_WARNA = {{ colors|tojson }};
     window.REKOMENDASI = {{ rek|tojson }};
     window.CATATAN = {{ catatan|tojson }};
+    window.SUMBER_REK = {{ sumber_rek|tojson }};
     window.KRITERIA = {{ kriteria|tojson }};
   </script>
   <script src="{{ url_for('static', filename='js/ringkasan.js') }}"></script>

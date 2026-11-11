@@ -68,6 +68,9 @@ def main():
     for i in range(4):
         daftar = rekomendasi(i)
         assert daftar and all({"tindakan", "prioritas", "sumber"} <= set(x) for x in daftar), i
+        assert 4 <= len(daftar) <= 6, (i, len(daftar))                       # plan: 4-6 tindakan per klaster
+        assert all(x["prioritas"] in {"tinggi", "sedang", "rendah"} for x in daftar)
+        assert len({x["tindakan"] for x in daftar}) == len(daftar)           # tidak ada tindakan ganda
     assert rekomendasi(99) is None
     assert CATATAN_VALIDASI.split(";")[0] in c.get("/komparasi").get_data(as_text=True)
     # metodologi: angka berasal dari data/metrics.json dan bobot aktif
@@ -78,6 +81,12 @@ def main():
     html = r.get_data(as_text=True)
     assert f"{mt['metrics_baseline']['silhouette']:.3f}" in html and f"{max(mt['weights']['entropi']) * 100:.1f}%" in html
     assert mt["rentang_tahun"] in html
+    # tabel arti kriteria memuat contoh kecamatan dari data (nilai tertinggi tiap kriteria)
+    tt = pd.read_csv(config.TOPSIS_CSV)
+    from src.pipeline import CRITERIA as _CR
+    for kol, v in _CR.items():
+        assert v["desc"] in html and tt.loc[tt[kol].idxmax(), "kecamatan"].title() in html, kol
+    assert "Arti tiap kriteria" in html and "Mengulang analisis" in html and 'class="alur"' in html
     assert f"{mt['n_kecamatan']} kecamatan" in html
     assert "print.css" in c.get("/").get_data(as_text=True)
     # framing + bobot aktif: judul, pengantar, footer berisi metadata data, banner/skrip bobot aktif di semua halaman

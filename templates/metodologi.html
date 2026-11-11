@@ -12,6 +12,9 @@
     .rumus { background: var(--row-alt); border-radius: 6px; padding: 12px 16px; font-family: "Cascadia Mono", Consolas, monospace; font-size: 14px; margin: 8px 0; white-space: pre-wrap; }
     .catatan { border: 1px solid var(--ink); border-radius: 6px; padding: 12px 16px; font-size: 15px; margin-top: 8px; }
     .ya { font-weight: 700; } .tidak { color: var(--ink-soft); }
+    .alur { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 12px; }
+    .alur span { border: 1px solid var(--ink); border-radius: 999px; padding: 4px 14px; font-weight: 600; font-size: 15px; }
+    .alur i { font-style: normal; color: var(--ink-soft); }
   </style>
 {% endblock %}
 
@@ -23,6 +26,10 @@
   </p>
 
   <h2>1. Alur kerja</h2>
+  <div class="alur" aria-label="Alur kerja">
+    <span>Tujuan</span><i>→</i><span>Pemeriksaan data</span><i>→</i><span>Penyiapan data</span><i>→</i>
+    <span>Pemodelan</span><i>→</i><span>Evaluasi</span><i>→</i><span>Penyajian</span>
+  </div>
   <ol>
     <li><b>Tujuan:</b> menentukan kecamatan yang paling perlu diprioritaskan untuk mitigasi banjir.</li>
     <li><b>Pemeriksaan data:</b> menilai kualitas tiap berkas Satu Data Jakarta.</li>
@@ -62,26 +69,40 @@
   <p>Tiap kecamatan dinilai dengan 8 kriteria. Skor risiko (0–1) makin besar bila kecamatan makin dekat dengan kondisi terburuk dan makin jauh dari kondisi terbaik.</p>
   <div class="rumus">skor = jarak ke kondisi terbaik ÷ (jarak ke terbaik + jarak ke terburuk)</div>
   <p>Bobot bawaan dihitung dari data (metode entropi): kriteria yang nilainya paling beragam antar-kecamatan mendapat bobot lebih besar. Jadi bila data berubah, bobot dan peringkat ikut bergeser. Bobot saat ini:</p>
+  <p id="judul-aktif" class="muted" hidden>Kolom "Aktif" menampilkan bobot yang Anda terapkan: <b id="nama-aktif"></b>.</p>
   <div style="overflow-x:auto;">
   <table class="table">
-    <thead><tr><th>Kriteria</th><th>Dimensi</th><th class="num">Entropi (bawaan)</th><th class="num">Sama rata</th><th class="num">Pakar</th></tr></thead>
+    <thead><tr><th>Kriteria</th><th>Dimensi</th><th class="num">Entropi (bawaan)</th><th class="num">Sama rata</th><th class="num">Pakar</th><th class="num kol-aktif" hidden>Aktif</th></tr></thead>
     <tbody>
     {% for r in tabel_bobot %}
-      <tr><td>{{ r.desc }}</td><td>{{ r.dimensi }}</td><td class="num">{{ "%.1f"|format(r.entropi) }}%</td><td class="num">{{ "%.1f"|format(r.sama) }}%</td><td class="num">{{ "%.1f"|format(r.pakar) }}%</td></tr>
+      <tr><td>{{ r.desc }}</td><td>{{ r.dimensi }}</td><td class="num">{{ "%.1f"|format(r.entropi) }}%</td><td class="num">{{ "%.1f"|format(r.sama) }}%</td><td class="num">{{ "%.1f"|format(r.pakar) }}%</td><td class="num kol-aktif" hidden></td></tr>
     {% endfor %}
     </tbody>
   </table>
   </div>
   <p>Bobot terbesar: <b>{{ terbesar.desc }}</b> ({{ "%.1f"|format(terbesar.entropi) }}%). Di halaman <a href="/simulasi">Simulasi Bobot</a> Anda dapat melihat peringkat bergeser bila bobot diganti.</p>
 
-  <h2>5. Pengelompokan (K-Means)</h2>
+  <h2>5. Arti tiap kriteria</h2>
+  <p>Contoh kecamatan dengan nilai tertinggi dan terendah (dari data saat ini) membantu menjawab "mengapa kecamatan A di atas B?".</p>
+  <div style="overflow-x:auto;">
+  <table class="table">
+    <thead><tr><th>Kriteria</th><th>Satuan</th><th>Arah</th><th>Tertinggi</th><th>Terendah</th></tr></thead>
+    <tbody>
+    {% for k in interpretasi %}
+      <tr><td><b>{{ k.desc }}</b><br><span class="muted">{{ k.dimensi }}</span></td><td>{{ k.satuan }}</td><td>{{ k.arah }}</td><td>{{ k.tinggi }}</td><td>{{ k.rendah }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+  <h2>6. Pengelompokan (K-Means)</h2>
   <p>Kecamatan dikelompokkan berdasarkan skor risiko, warga terdampak per 1000 penduduk, dan kepadatan penduduk. Klaster 0 memiliki skor rata-rata tertinggi, klaster {{ k_final - 1 }} terendah.</p>
   <p>Jumlah klaster dipilih {{ k_final }} agar mudah dibaca: empat tingkat prioritas. Grafik pemilihan ada di halaman <a href="/klaster">Klaster</a>; nilai silhouette hampir sama untuk k = 2–7 ({{ "%.3f"|format(sil_min) }}–{{ "%.3f"|format(sil_maks) }}), jadi tidak ada pilihan yang jelas lebih baik.</p>
   <p>Mutu model akhir: silhouette <b>{{ "%.3f"|format(metrics.silhouette) }}</b>, Davies-Bouldin <b>{{ "%.3f"|format(metrics.DBI) }}</b>, Calinski-Harabasz <b>{{ "%.1f"|format(metrics.CH) }}</b>.
     Ukuran klaster: {% for k in klaster %}{{ k.nama }} {{ k.n }}{% if not loop.last %}, {% endif %}{% endfor %}.
     Kecamatan dengan silhouette di bawah {{ batas }} ditandai "kurang pasti" karena berada dekat batas klaster.</p>
 
-  <h2>6. Keterbatasan</h2>
+  <h2>7. Keterbatasan</h2>
   <ul>
     <li>Silhouette {{ "%.2f"|format(metrics.silhouette) }} tergolong lemah: klaster saling berdekatan. Wajar untuk {{ n_kecamatan }} kecamatan; baca klaster sebagai tingkat prioritas, bukan kelompok yang terpisah tegas.</li>
     <li>Data banjir hanya {{ n_tahun }} dari 12 tahun, dan data 2020 hanya sampai September. Daerah yang jarang melapor bisa tampak lebih aman dari kenyataan.</li>
@@ -90,8 +111,31 @@
     <li>Model belum memakai ketinggian tanah, curah hujan, atau kondisi saluran air.</li>
   </ul>
 
-  <h2>7. Etika dan privasi</h2>
+  <h2>8. Etika dan privasi</h2>
   <p>Data bersifat agregat per kecamatan dan tidak memuat data pribadi. Hasil ini alat bantu, bukan keputusan tunggal, dan mutunya bergantung pada kualitas data sumber.</p>
   <div class="catatan">{{ catatan }}</div>
+
+  <h2>9. Mengulang analisis (reproducibility)</h2>
+  <p>Seluruh kode dan data ada di <a href="{{ github_url }}" target="_blank" rel="noopener">repositori GitHub</a>. Data mentah berasal dari
+    <a href="https://data.jakarta.go.id" target="_blank" rel="noopener">Satu Data Jakarta</a>. Langkahnya:</p>
+  <ol>
+    <li>Jalankan notebook <code>notebook/01_data.ipynb</code> untuk membangun tabel master dari data mentah, lalu <code>02_topsis</code> dan <code>03_kmeans</code> untuk penjelasan tiap tahap.</li>
+    <li>Hitung ulang hasil yang dipakai website: <code>python -m src.pipeline --input data/dki_master.csv --output data/</code></li>
+    <li>Periksa dengan <code>python -m pytest tests</code>, lalu jalankan <code>python app.py</code>.</li>
+  </ol>
 </div>
+<script>
+  // tampilkan kolom bobot aktif bila pengguna menerapkan bobot di halaman Simulasi
+  document.addEventListener("DOMContentLoaded", () => {
+    const a = window.BobotAktif && window.BobotAktif.get();
+    if (!a) return;
+    document.querySelectorAll(".kol-aktif").forEach(el => { el.hidden = false; });
+    document.querySelectorAll(".prosa tbody tr").forEach(tr => {
+      const sel = tr.querySelector("td.kol-aktif");
+      if (sel) sel.textContent = (a.bobot[[...tr.parentNode.children].indexOf(tr)] * 100).toFixed(1) + "%";
+    });
+    document.querySelector("#judul-aktif").hidden = false;
+    document.querySelector("#nama-aktif").textContent = window.BobotAktif.NAMA[a.preset];
+  });
+</script>
 {% endblock %}
