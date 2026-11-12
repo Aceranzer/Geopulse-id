@@ -1,6 +1,6 @@
-/* Penyesuaian tata letak di atas theme.css (theme.css tidak diubah). */
+/* Penyesuaian tata letak di atas theme.css. */
 .container { max-width: none; padding: 0 32px; }   /* selebar header */
-.topbar .container { max-width: none; padding: 0 32px; }   /* judul rapat ke kiri, menu rapat ke kanan */
+.topbar .container { max-width: none; padding: 0 32px; }
 #peta { height: 560px; }
 .peta-prioritas { display: grid; grid-template-columns: 3fr 2fr; gap: 24px; margin-top: 24px; align-items: start; }
 .peta-prioritas .section { margin-top: 0; }
@@ -11,20 +11,22 @@ a.btn { text-decoration: none; color: var(--primary-ink); }
 
 /* ---- font lebih besar (menimpa ukuran kecil di theme.css) ---- */
 body { font-size: 16px; line-height: 1.55; }
-main h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: -.01em; }
+main h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: -.01em; color: var(--ink); }
+main > p.muted, main > .lead { font-size: 15px; color: var(--ink-soft); margin: 0 0 20px; }
 .brand { font-size: 28px; }
 .nav { gap: 28px; }
 .nav a { font-size: 15px; }
 .btn { font-size: 15px; padding: 11px 18px; }
 .card h2, .card h3 { font-size: 19px; margin-bottom: 6px; }
 .card .muted, .muted { font-size: 14px; }
-.stat .label { font-size: 16px; }
-.stat .num { font-size: 32px; }
+.stat .label { font-size: 13px; }
+.stat .num { font-size: 32px; letter-spacing: -.02em; }
 .stat .foot { font-size: 13px; }
 .rank-row { padding: 12px 16px; }
 .rank-row .no { font-size: 24px; }
 .rank-row .name { font-size: 15px; }
-.pill { font-size: 13px; padding: 3px 14px; }
+.pill { font-size: 13px; padding: 3px 12px; }
+.pill::before { width: 9px; height: 9px; }
 .table { font-size: 14.5px; }
 .table th { font-size: 13px; }
 .table td, .table th { padding: 12px 10px; }
@@ -33,27 +35,32 @@ input[type=search], select, input[type=text], input[type=file] { font-size: 15px
 .pager .page { width: 32px; height: 32px; font-size: 14px; }
 .footer { font-size: 14px; padding: 20px 0; }
 
-/* ---- banner bobot aktif, toast, footer ---- */
-.banner-bobot { background: #e6f0fb; border-bottom: 1px solid #b7d1ee; color: #1b3b5f; font-size: 15px; cursor: pointer; }
+/* ---- banner bobot aktif (konsisten dengan --accent) ---- */
+.banner-bobot { background: var(--accent-bg); border-bottom: 1px solid var(--accent-border); color: var(--primary); font-size: 15px; cursor: pointer; transition: background .15s; }
 .banner-bobot[hidden] { display: none; }
 .banner-bobot .container { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 8px; padding-bottom: 8px; flex-wrap: wrap; }
-.banner-bobot:hover { background: #dbe9f9; }
-.btn-kecil { border: 1px solid #1b3b5f; background: #fff; color: #1b3b5f; border-radius: 6px; padding: 4px 12px; font: 600 14px var(--font); cursor: pointer; }
-.btn-kecil:hover { background: #f1f6fc; }
-.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #111; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 15px; z-index: 2000; max-width: 92vw; box-shadow: 0 4px 16px rgba(0,0,0,.25); }
+.banner-bobot:hover { background: #D9ECEF; }
+.btn-kecil { border: 1px solid var(--primary); background: var(--surface); color: var(--primary); border-radius: 6px; padding: 4px 12px; font: 600 14px var(--font); cursor: pointer; transition: background .15s; }
+.btn-kecil:hover { background: var(--accent-bg); }
+
+/* ---- toast ---- */
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 15px; z-index: 2000; max-width: 92vw; box-shadow: var(--shadow-md); }
 .toast[hidden] { display: none; }
 .toast a { color: #fff; text-decoration: underline; margin-left: 8px; }
+
+/* ---- footer ---- */
 .footer-grid { display: grid; grid-template-columns: 1.2fr 1.4fr 1fr; gap: 24px; line-height: 1.6; }
-.footer a { color: inherit; }
+.footer a { color: inherit; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.footer a:hover { text-decoration-color: var(--accent); }
 @media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr; gap: 12px; } }
 
 /* ---- pill prioritas tindakan (tinggi / sedang / rendah) ---- */
-.prio { display: inline-block; min-width: 56px; text-align: center; border: 1px solid currentColor; border-radius: 999px; padding: 0 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-right: 6px; vertical-align: 1px; }
-.prio.tinggi { color: #8b0000; background: #fde4e4; }
-.prio.sedang { color: #8a5a00; background: #fff3b8; }
-.prio.rendah { color: #2f7d4f; background: #e3f4e6; }
+.prio { display: inline-block; min-width: 56px; text-align: center; border: 1px solid currentColor; border-radius: 999px; padding: 0 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-right: 6px; vertical-align: 1px; letter-spacing: .03em; }
+.prio.tinggi { color: var(--c0); background: var(--c0-bg); }
+.prio.sedang { color: var(--warning); background: var(--warning-bg); }
+.prio.rendah { color: var(--c3); background: var(--c3-bg); }
 
-/* ---- mobile (<= 800px; diuji pada layar 375x667) ---- */
+/* ---- mobile (<= 800px) ---- */
 @media (max-width: 800px) {
   .container, .topbar .container { padding-left: 16px; padding-right: 16px; }
   .topbar .container { height: auto; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; gap: 4px 16px; }
@@ -63,21 +70,19 @@ input[type=search], select, input[type=text], input[type=file] { font-size: 15px
   main h1 { font-size: 24px; }
   .stat .num { font-size: 26px; }
   .card { padding: 16px; }
-  #peta { height: 320px; }                                   /* peta tetap tinggi >= 300px */
+  #peta { height: 320px; }
   .anggota { columns: 1; }
   .tools, .pager { flex-wrap: wrap; }
-  .banner-bobot .container { flex-direction: column; align-items: flex-start; }   /* tombol Reset turun ke baris bawah */
+  .banner-bobot .container { flex-direction: column; align-items: flex-start; }
   .toast { bottom: 12px; font-size: 14px; }
-  /* kartu Daftar Prioritas: teks memakai lebar penuh, label klaster turun ke baris bawah */
   .rank-row { flex-wrap: wrap; row-gap: 6px; }
   .rank-row .name { flex: 1 1 70%; min-width: 0; }
   .rank-row .pill { margin-left: 40px; }
 
-  /* tabel lebar: gulir horizontal, kolom nama kecamatan menempel di kiri */
   .tabel-lekat-1, .tabel-lekat-2 { min-width: 640px; }
   .tabel-lekat-1 th:nth-child(1), .tabel-lekat-1 td:nth-child(1),
-  .tabel-lekat-2 th:nth-child(2), .tabel-lekat-2 td:nth-child(2) { position: sticky; left: 0; z-index: 1; background: #fff; box-shadow: 1px 0 0 var(--line); }
+  .tabel-lekat-2 th:nth-child(2), .tabel-lekat-2 td:nth-child(2) { position: sticky; left: 0; z-index: 1; background: var(--surface); box-shadow: 1px 0 0 var(--line); }
   .tabel-lekat-1 tbody tr:nth-child(odd) td:nth-child(1),
   .tabel-lekat-2 tbody tr:nth-child(odd) td:nth-child(2) { background: var(--row-alt); }
 }
-@media (min-width: 561px) and (max-width: 800px) { .grid-4 { grid-template-columns: 1fr 1fr; } }   /* kartu KPI 2 kolom di tablet */
+@media (min-width: 561px) and (max-width: 800px) { .grid-4 { grid-template-columns: 1fr 1fr; } }
