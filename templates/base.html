@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Geopulse-ID{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
@@ -19,15 +20,7 @@
     <div class="container">
       <div class="topbar-card">
         <a class="brand" href="/" aria-label="Geopulse-ID, ke Dashboard">
-          <span class="brand-mark" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2.5C12 2.5 5 10 5 14.5a7 7 0 0 0 14 0C19 10 12 2.5 12 2.5Z" fill="#FFFCFB" fill-opacity="0.95"/>
-              <circle cx="12" cy="14.5" r="3" fill="#F2D479"/>
-              <circle cx="9.2" cy="12.2" r="1.2" fill="#C44A3A"/>
-              <circle cx="14.8" cy="12.2" r="1.2" fill="#D97A2B"/>
-              <circle cx="12" cy="17.8" r="1.1" fill="#F2D479"/>
-            </svg>
-          </span>
+          <img class="brand-mark" src="{{ url_for('static', filename='img/logo-mark-96.png') }}" alt="" width="44" height="44">
           <span>
             <span class="brand-name">Geopulse-ID</span>
             <span class="brand-sub">Prioritas mitigasi banjir DKI Jakarta</span>

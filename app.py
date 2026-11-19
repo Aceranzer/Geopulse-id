@@ -56,6 +56,16 @@ app.jinja_env.filters["angka"] = angka
 app.jinja_env.globals["pdf_css"] = lambda: (config.BASE_DIR / "static" / "css" / "pdf.css").read_text(encoding="utf-8")
 
 
+def logo_uri():
+    """Logo Geopulse-ID (ikon radar) sebagai data URI, untuk PDF; alasan sama dengan pdf_css."""
+    import base64
+    data = (config.BASE_DIR / "static" / "img" / "logo-mark-96.png").read_bytes()
+    return "data:image/png;base64," + base64.b64encode(data).decode("ascii")
+
+
+app.jinja_env.globals["logo_uri"] = logo_uri
+
+
 def baca_metrics():
     with open(config.METRICS_JSON, encoding="utf-8") as f:
         return json.load(f)

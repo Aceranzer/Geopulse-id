@@ -2,45 +2,48 @@
 
 Kerangka: Perka BNPB No. 2 Tahun 2012 (Pedoman Umum Pengkajian Risiko Bencana), yaitu
 Risiko = Bahaya x Kerentanan / Kapasitas. Dokumen itu mengatur cara menilai risiko, bukan daftar
-tindakan per klaster; jadi isi tindakan di bawah adalah DRAF AWAL yang disusun mengikuti dimensi
+tindakan per klaster; jadi isi tindakan di bawah adalah DRAF AWAL untuk petugas pemerintah yang disusun mengikuti dimensi
 Bahaya, Kerentanan, dan Kapasitas, dan wajib divalidasi tim lapangan/BPBD sebelum dipakai.
 """
 
 SUMBER = "Kerangka Perka BNPB 02/2012 (draf awal, belum divalidasi lapangan)"
-CATATAN_VALIDASI = "Ini rekomendasi awal dan perlu dicek oleh tim lapangan. Keputusan akhir ada pada BPBD."
+CATATAN_VALIDASI = ("Rekomendasi ini ditujukan untuk petugas pemerintah dan masih berupa draf awal. "
+                    "Pembagian tugas antar dinas perlu disesuaikan dengan aturan setempat dan dicek oleh tim lapangan. "
+                    "Keputusan akhir ada pada BPBD.")
 
 
 def _t(tindakan, prioritas):
     return {"tindakan": tindakan, "prioritas": prioritas, "sumber": SUMBER}
 
 
+# Setiap tindakan ditulis sebagai tugas untuk petugas (BPBD, Dinas SDA, Dinas Sosial, camat, lurah).
 RULES = {
     0: [  # Prioritas Tinggi
-        _t("Pasang alat peringatan dini (EWS) di kecamatan yang belum punya. Uji alatnya sebelum setiap musim hujan.", "tinggi"),
-        _t("Adakan sosialisasi kesiapsiagaan banjir di tingkat kelurahan, minimal 2 kali setahun.", "tinggi"),
-        _t("Tentukan jalur dan titik evakuasi, lalu beri tanda yang jelas. Latih warga lewat simulasi evakuasi setiap tahun.", "tinggi"),
-        _t("Perbaiki saluran air kecil dan bersihkan saluran di titik yang sering tergenang.", "tinggi"),
-        _t("Siapkan pompa, perahu karet, dan posko sebelum musim hujan di kelurahan yang genangannya paling lama.", "sedang"),
-        _t("Utamakan lansia, anak-anak, dan penyandang disabilitas dalam rencana evakuasi kelurahan.", "sedang"),
+        _t("BPBD dan Dinas SDA memasang alat peringatan dini (EWS) di kelurahan yang belum punya. Uji alatnya sebelum setiap musim hujan.", "tinggi"),
+        _t("Camat dan lurah mengadakan sosialisasi kesiapsiagaan banjir di tingkat kelurahan, minimal 2 kali setahun.", "tinggi"),
+        _t("BPBD bersama kelurahan menentukan jalur dan titik evakuasi, lalu memasang tandanya. Adakan simulasi evakuasi bersama warga setiap tahun.", "tinggi"),
+        _t("Dinas SDA memperbaiki saluran air kecil dan membersihkan saluran di titik yang sering tergenang.", "tinggi"),
+        _t("BPBD menyiapkan pompa, perahu karet, dan posko sebelum musim hujan di kelurahan yang genangannya paling lama.", "sedang"),
+        _t("Dinas Sosial dan kelurahan mendahulukan lansia, anak-anak, dan penyandang disabilitas dalam rencana evakuasi.", "sedang"),
     ],
     1: [  # Waspada
-        _t("Lengkapi alat peringatan dini (EWS) di kelurahan rawan yang belum terpantau.", "tinggi"),
-        _t("Periksa dan bersihkan saluran air serta pintu air sebelum musim hujan.", "sedang"),
-        _t("Sosialisasikan kesiapsiagaan banjir dan rencana evakuasi di tingkat RT/RW, minimal 1 kali setahun.", "sedang"),
-        _t("Tentukan titik kumpul dan umumkan nomor kontak darurat kelurahan.", "sedang"),
-        _t("Pantau genangan setiap musim hujan. Jika kejadian bertambah, naikkan ke penanganan prioritas.", "sedang"),
+        _t("BPBD melengkapi alat peringatan dini (EWS) di kelurahan rawan yang belum terpantau.", "tinggi"),
+        _t("Dinas SDA memeriksa dan membersihkan saluran air serta pintu air sebelum musim hujan.", "sedang"),
+        _t("Lurah dan pengurus RT/RW mensosialisasikan kesiapsiagaan banjir dan rencana evakuasi, minimal 1 kali setahun.", "sedang"),
+        _t("Kelurahan menentukan titik kumpul dan mengumumkan nomor kontak darurat.", "sedang"),
+        _t("BPBD memantau genangan setiap musim hujan. Jika kejadian bertambah, naikkan ke penanganan prioritas.", "sedang"),
     ],
     2: [  # Menengah
-        _t("Pantau kondisi saluran dan titik genangan setiap bulan selama musim hujan.", "sedang"),
-        _t("Rawat alat peringatan dini yang sudah ada dan latih relawan kelurahan.", "sedang"),
-        _t("Sosialisasikan kesiapsiagaan banjir lewat RT/RW setiap tahun.", "rendah"),
-        _t("Perbarui rencana darurat kelurahan secara berkala.", "rendah"),
+        _t("Dinas SDA memantau kondisi saluran dan titik genangan setiap bulan selama musim hujan.", "sedang"),
+        _t("BPBD merawat alat peringatan dini yang sudah ada dan melatih relawan kelurahan.", "sedang"),
+        _t("Lurah dan pengurus RT/RW mensosialisasikan kesiapsiagaan banjir setiap tahun.", "rendah"),
+        _t("Kelurahan memperbarui rencana darurat secara berkala.", "rendah"),
     ],
     3: [  # Rendah
-        _t("Jaga sistem peringatan dini tetap berfungsi dan rawat saluran air secara rutin.", "rendah"),
-        _t("Cek catatan banjir di lapangan sebelum menurunkan prioritas suatu kecamatan.", "sedang"),
-        _t("Pantau kejadian banjir dari tahun ke tahun. Hitung ulang klaster saat ada data baru.", "rendah"),
-        _t("Pastikan warga tahu jalur evakuasi dan nomor kontak darurat.", "rendah"),
+        _t("BPBD menjaga sistem peringatan dini tetap berfungsi, dan Dinas SDA merawat saluran air secara rutin.", "rendah"),
+        _t("Petugas kecamatan mengecek catatan banjir di lapangan sebelum menurunkan prioritas suatu kecamatan.", "sedang"),
+        _t("BPBD memantau kejadian banjir dari tahun ke tahun dan menghitung ulang klaster saat ada data baru.", "rendah"),
+        _t("Lurah memastikan warga tahu jalur evakuasi dan nomor kontak darurat.", "rendah"),
     ],
 }
 

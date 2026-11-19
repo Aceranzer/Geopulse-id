@@ -271,7 +271,7 @@ function bukaDetail(slug) {
     <h3>Nilai tiap kriteria</h3>
     <div class="tabel-wrap"><table class="table"><tbody>${window.KRITERIA.map(k =>
       `<tr><td>${esc(k.desc)}</td><td class="muted">${esc(k.satuan)}</td><td class="num">${nilaiId(r[k.kolom])}</td></tr>`).join("")}</tbody></table></div>
-    <h3>Tindakan yang disarankan</h3>
+    <h3>Tindakan yang disarankan untuk petugas</h3>
     ${tindakan ? `<ul>${tindakan.map(t => `<li>${esc(t.tindakan)}</li>`).join("")}</ul>`
                : '<div class="placeholder">Rekomendasi belum ditetapkan.</div>'}
     <div class="muted" style="margin-top:6px">${esc(window.CATATAN)}<br>Sumber: ${esc(window.SUMBER_REK)}</div>
