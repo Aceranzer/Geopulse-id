@@ -46,7 +46,7 @@ CLUSTER_FEATURES = ["skor_topsis", "jiwa_per_1000", "kepadatan_jiwa_km2"]
 K_FINAL = 4
 SEED = 42
 CLUSTER_NAMES = ["Prioritas Tinggi", "Waspada", "Menengah", "Rendah"]
-CLUSTER_COLORS = ["#8B0000", "#E4572E", "#F6C85F", "#B7E4A7"]   # merah tua, jingga, kuning, hijau
+CLUSTER_COLORS = ["#C44A3A", "#D97A2B", "#F2D479", "#6FAF4F"]   # merah bata, jingga, emas, hijau sage (sama dengan token --c0..--c3 di tokens.css)
 SILHOUETTE_BATAS = 0.1   # silhouette per kecamatan di bawah ini = kecamatan batas (klaster kurang pasti)
 
 

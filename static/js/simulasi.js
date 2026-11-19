@@ -74,19 +74,11 @@ function hitung() {
     .catch(() => { if (saya === urutan) info.textContent = "Server tidak dapat dihubungi."; });
 }
 
-let timerToast = null;
-function toast(html) {
-  const t = document.getElementById("toast");
-  t.innerHTML = html; t.hidden = false;
-  clearTimeout(timerToast);
-  timerToast = setTimeout(() => { t.hidden = true; }, 7000);
-}
-
-// "Terapkan ke Dashboard": simpan bobot untuk sesi tab ini; bobot entropi (bawaan) berarti menghapus bobot aktif
+// "Terapkan ke Dashboard": simpan bobot untuk sesi tab ini (bobot entropi = bawaan berarti menghapus bobot aktif),
+// lalu langsung pindah ke Dashboard supaya efeknya terlihat tanpa klik tambahan
 document.getElementById("btn-terapkan").addEventListener("click", () => {
   window.BobotAktif.set(mode, bobotSekarang());
-  window.BobotAktif.pasangBanner();
-  toast(`Diterapkan: <b>${esc(NAMA_PRESET[mode])}</b>. Buka Dashboard untuk melihat efek pada peta &amp; peringkat. <a href="/">Buka Dashboard</a>`);
+  location.href = "/";
 });
 
 // tombol PDF mengirim bobot yang sedang dipratinjau ke server

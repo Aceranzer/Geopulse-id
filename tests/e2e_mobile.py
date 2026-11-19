@@ -56,7 +56,7 @@ try:
             if mode == "aktif":
                 pg.goto(URL + "/simulasi"); pg.wait_for_selector("#tabel tbody tr")
                 pg.click('.preset[data-mode="pakar"]'); pg.wait_for_function("document.querySelector('#ringkasan').innerText.includes('Pakar')")
-                pg.click("#btn-terapkan")
+                pg.click("#btn-terapkan"); pg.wait_for_url(URL + "/"); pg.wait_for_selector("#tabel tbody tr")
             for i, url in enumerate(HALAMAN):
                 tunggu(pg, url)
                 nama = url.split("?")[0].strip("/") or "dashboard"

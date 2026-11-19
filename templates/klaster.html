@@ -2,51 +2,40 @@
 {% block title %}Klaster · Geopulse-ID{% endblock %}
 
 {% block head %}
-  <style>
-    .klaster-card { border-left-width: 6px; }
-    .klaster-card .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-    .klaster-card .n { font-size: 28px; font-weight: 700; }
-    .mini th, .mini td { padding: 4px 6px; font-size: 14px; text-align: right; }
-    .mini th:first-child, .mini td:first-child { text-align: left; }
-    .mini th { text-transform: none; }
-    .naik { color: #8b0000; } .turun { color: #2f7d4f; }
-    .anggota { margin: 12px 0 0; padding: 0; list-style: none; font-size: 14px; columns: 2; }
-    .anggota li { margin-bottom: 2px; break-inside: avoid; }
-    .batas { color: #b8860b; font-weight: 600; }
-    .chart-box { position: relative; height: 260px; }
-    .section { margin-top: 24px; }
-  </style>
 {% endblock %}
 
 {% block content %}
-  <h1>Klaster Prioritas</h1>
-  <p class="muted" style="margin:0 0 16px; color:var(--ink-soft);">
-    Kecamatan dikelompokkan menjadi {{ k_final }} tingkat prioritas menurut skor risiko, warga terdampak, dan kepadatan. Klaster 0 = risiko tertinggi.
-  </p>
-
-  <p class="muted" style="margin:0 0 16px;">
-    <span id="status-bobot"></span>
-    Baseline (bobot entropi): {% for b in baseline %}{{ b.n }} {{ b.nama }}{% if not loop.last %}, {% endif %}{% endfor %}.
-  </p>
+  <section class="page-head">
+    <span class="eyebrow">Pengelompokan</span>
+    <h1>Klaster Prioritas</h1>
+    <p class="lead">
+      Kecamatan dikelompokkan menjadi {{ k_final }} tingkat prioritas menurut skor risiko, warga terdampak, dan kepadatan. Klaster 0 = risiko tertinggi.
+    </p>
+    <p class="muted" style="margin-block-start:8px; font-size:var(--text-sm);">
+      <span id="status-bobot"></span>
+      Baseline (bobot entropi): {% for b in baseline %}{{ b.n }} {{ b.nama }}{% if not loop.last %}, {% endif %}{% endfor %}.
+    </p>
+  </section>
 
   <div class="grid grid-2" id="kartu"></div>
-  <p class="muted" style="margin-top:12px;">
+  <p class="muted" style="font-size:var(--text-sm); padding-inline:4px;">
     <span class="batas">▲</span> Kecamatan batas: posisi klasternya kurang pasti.
     Panah membandingkan rata-rata klaster dengan rata-rata semua kecamatan (merah = lebih berisiko, hijau = kurang berisiko).
   </p>
 
   <div class="card section">
-    <h2>Memilih jumlah klaster</h2>
-    <div class="muted" id="catatan-k"></div>
-    <div class="grid grid-2" style="margin-top:12px;">
-      <div><div class="muted">Elbow (makin rendah, makin rapat)</div><div class="chart-box"><canvas id="elbow"></canvas></div></div>
-      <div><div class="muted">Silhouette (makin tinggi, makin terpisah)</div><div class="chart-box"><canvas id="sil"></canvas></div></div>
+    <h2>Mengapa {{ k_final }} klaster?</h2>
+    <p class="card-sub" id="catatan-k"></p>
+    <div class="grid grid-2">
+      <div><div class="chart-title">Kerapatan (elbow): makin rendah, makin rapat</div><div class="chart-box"><canvas id="elbow"></canvas></div></div>
+      <div><div class="chart-title">Keterpisahan (silhouette): makin tinggi, makin terpisah</div><div class="chart-box"><canvas id="sil"></canvas></div></div>
     </div>
   </div>
 {% endblock %}
 
 {% block scripts %}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="{{ url_for('static', filename='js/chart-tema.js') }}"></script>
   <script>window.BATAS = {{ batas }};</script>
   <script src="{{ url_for('static', filename='js/klaster.js') }}"></script>
 {% endblock %}

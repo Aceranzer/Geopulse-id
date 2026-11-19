@@ -8,7 +8,7 @@
 <body>
 <div class="halaman">
   <header class="kop">
-    <span class="merek">Geopulse-ID</span>
+    <span class="merek"><span class="logo"><img src="{{ logo_uri() }}" alt="" width="26" height="26"></span>Geopulse-ID</span>
     <span class="meta">Hasil Simulasi Bobot · dibuat {{ tanggal }}<br>Versi data: {{ versi }}</span>
   </header>
 
@@ -28,7 +28,7 @@
       <tr>
         <td>{{ h.kecamatan|title }}</td><td>{{ h.wilayah|title }}</td>
         <td class="num">{{ h.rank_bawaan }}</td><td class="num">{{ h.rank_baru }}</td><td class="num">{{ "%.3f"|format(h.skor_baru) }}</td>
-        <td>{% if h.delta > 0 %}naik {{ h.delta }}{% elif h.delta < 0 %}turun {{ -h.delta }}{% else %}tetap{% endif %}</td>
+        {% if h.delta > 0 %}<td class="naik">▲ naik {{ h.delta }}</td>{% elif h.delta < 0 %}<td class="turun">▼ turun {{ -h.delta }}</td>{% else %}<td class="tetap">tetap</td>{% endif %}
       </tr>
     {% endfor %}
     </tbody>

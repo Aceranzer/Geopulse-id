@@ -54,8 +54,9 @@ try:
         ringkas = pg.inner_text("#ringkasan")
         cek("simulasi: tabel pergeseran terisi 42 baris", pg.locator("#tabel tbody tr").count() == 42, ringkas)
         pg.click("#btn-terapkan")
-        cek("simulasi: toast muncul", pg.locator("#toast").is_visible() and "Diterapkan" in pg.inner_text("#toast"))
-        cek("simulasi: banner muncul", pg.locator("#banner-bobot").is_visible() and "Pakar" in pg.inner_text("#banner-bobot"))
+        pg.wait_for_url(URL + "/"); pg.wait_for_selector("#tabel tbody tr")
+        cek("simulasi: Terapkan langsung pindah ke Dashboard", pg.url.rstrip("/") == URL)
+        cek("dashboard: banner muncul", pg.locator("#banner-bobot").is_visible() and "Pakar" in pg.inner_text("#banner-bobot"))
         tersimpan = pg.evaluate("sessionStorage.getItem('geopulse_bobot_aktif')")
         cek("sessionStorage berisi bobot Pakar", tersimpan and json.loads(tersimpan)["preset"] == "pakar")
         cek("localStorage kosong (bobot tidak lintas-sesi)", pg.evaluate("localStorage.length") == 0)
@@ -108,7 +109,7 @@ try:
         # --- klik banner membuka Simulasi
         pg.goto(URL + "/simulasi"); pg.wait_for_selector("#tabel tbody tr")
         pg.click('.preset[data-mode="sama"]'); pg.wait_for_function("document.querySelector('#ringkasan').innerText.includes('Sama rata')")
-        pg.click("#btn-terapkan"); pg.goto(URL + "/klaster"); pg.wait_for_selector("#kartu .klaster-card")
+        pg.click("#btn-terapkan"); pg.wait_for_url(URL + "/"); pg.wait_for_selector("#tabel tbody tr"); pg.goto(URL + "/klaster"); pg.wait_for_selector("#kartu .klaster-card")
         pg.click("#banner-bobot .container span")
         pg.wait_for_url("**/simulasi")
         cek("klik banner membuka halaman Simulasi", pg.url.endswith("/simulasi"))
@@ -117,8 +118,9 @@ try:
 
         # --- terapkan Entropi = reset
         pg.click('.preset[data-mode="entropi"]'); pg.wait_for_function("document.querySelector('#ringkasan').innerText.includes('Entropi')")
-        pg.click("#btn-terapkan")
+        pg.click("#btn-terapkan"); pg.wait_for_url(URL + "/"); pg.wait_for_selector("#tabel tbody tr")
         cek("menerapkan Entropi (bawaan) menghapus bobot aktif", pg.evaluate("sessionStorage.length") == 0 and pg.locator("#banner-bobot").is_hidden())
+        pg.goto(URL + "/simulasi"); pg.wait_for_selector("#tabel tbody tr")
 
         # --- slider kustom + debounce: banyak input cepat -> satu hasil konsisten
         pg.click('.preset[data-mode="kustom"]'); pg.wait_for_selector("#s0:not([disabled])")
