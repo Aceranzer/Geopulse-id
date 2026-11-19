@@ -1,0 +1,67 @@
+/* Base: reset and typography */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { overflow-x: clip; }
+html { scroll-padding-top: 96px; }
+
+/* Scrollbar modern: tipis, membulat, tanpa jalur (track) yang mencolok.
+   Thumb abu kemerahan lembut, jadi merah bata saat disentuh. Firefox pakai scrollbar-color. */
+@supports not selector(::-webkit-scrollbar) {
+  * { scrollbar-width: thin; scrollbar-color: #D8C3BF transparent; }
+}
+::-webkit-scrollbar { width: 14px; height: 14px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: #D8C3BF;
+  background-clip: padding-box;
+  border: 4px solid transparent;       /* jarak di sekeliling thumb, membuatnya terlihat ramping */
+  border-radius: 999px;
+  transition: background-color 160ms;
+}
+::-webkit-scrollbar-thumb:hover { background-color: var(--color-accent-fill); }
+::-webkit-scrollbar-thumb:active { background-color: var(--color-accent); }
+/* area kecil (tabel, dialog) lebih tipis lagi */
+.tabel-wrap::-webkit-scrollbar, .detail-scroll::-webkit-scrollbar { width: 12px; height: 12px; }
+.tabel-wrap::-webkit-scrollbar-thumb, .detail-scroll::-webkit-scrollbar-thumb { border-width: 3px; }
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink-2);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+::selection { background: var(--color-accent-fill); color: #fff; }
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  letter-spacing: var(--tracking-display);
+  line-height: 1.2;
+  color: var(--color-ink);
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+h1 { font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.125rem); }
+h2 { font-size: var(--text-title); }
+h3 { font-size: var(--text-md); }
+p { margin: 0; text-wrap: pretty; }
+a { color: var(--color-accent-text); text-underline-offset: 0.16em; }
+a:hover { text-decoration-thickness: 2px; }
+img, video { max-width: 100%; height: auto; display: block; }
+svg { display: block; }
+code { font-family: var(--font-outlier); font-size: 0.9em; background: var(--color-paper-2); padding: 1px 6px; border-radius: 6px; }
+[hidden] { display: none !important; }
+button, input, select, textarea { font: inherit; }
+.container { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); }
+.num, td.num, th.num { font-family: var(--font-outlier); font-variant-numeric: tabular-nums; }
+.muted { color: var(--color-muted); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 40rem) { :root { --gutter: 16px; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

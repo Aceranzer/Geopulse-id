@@ -218,10 +218,26 @@ def ringkasan():
         "n_tahun": len(tahun),
         "rentang_tahun": rentang_tahun(tahun),
     }
+    kpi_grafik = {
+        "per_kota": [[k.replace("JAKARTA ", "").title(), int(n)]
+                     for k, n in df.wilayah.value_counts().sort_index().items()],
+        "per_tahun": kejadian_tahunan(),
+        "rata": round(float(df.kejadian_per_tahun.mean()), 2),
+    }
     rek = {i: rekomendasi(i) for i in range(K_FINAL)}
     return render_template("ringkasan.html", stats=stats, top3=df.head(3).to_dict("records"),
-                           colors=CLUSTER_COLORS, rek=rek, catatan=CATATAN_VALIDASI, sumber_rek=SUMBER,
+                           colors=CLUSTER_COLORS, kpi_grafik=kpi_grafik, rek=rek, catatan=CATATAN_VALIDASI, sumber_rek=SUMBER,
                            kriteria=[{"kolom": k, **v} for k, v in CRITERIA.items()])
+
+
+def kejadian_tahunan():
+    """Rata-rata kejadian per kecamatan tiap tahun (data/kejadian_tahunan.json); None kalau berkasnya tidak ada."""
+    try:
+        with open(config.DATA_DIR / "kejadian_tahunan.json", encoding="utf-8") as f:
+            j = json.load(f)
+        return [[t, r] for t, r in zip(j["tahun"], j["rata"])]
+    except (OSError, KeyError, ValueError):
+        return None
 
 
 def interpretasi_kriteria():

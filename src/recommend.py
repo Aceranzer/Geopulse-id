@@ -7,7 +7,7 @@ Bahaya, Kerentanan, dan Kapasitas, dan wajib divalidasi tim lapangan/BPBD sebelu
 """
 
 SUMBER = "Kerangka Perka BNPB 02/2012 (draf awal, belum divalidasi lapangan)"
-CATATAN_VALIDASI = "Rekomendasi awal; perlu divalidasi tim lapangan. Keputusan final ada pada BPBD."
+CATATAN_VALIDASI = "Ini rekomendasi awal dan perlu dicek oleh tim lapangan. Keputusan akhir ada pada BPBD."
 
 
 def _t(tindakan, prioritas):
@@ -16,31 +16,31 @@ def _t(tindakan, prioritas):
 
 RULES = {
     0: [  # Prioritas Tinggi
-        _t("Prioritaskan pemasangan alat peringatan dini (EWS) tambahan di kecamatan yang belum memilikinya; uji fungsinya sebelum setiap musim hujan", "tinggi"),
-        _t("Lakukan sosialisasi kesiapsiagaan musim hujan di tingkat kelurahan minimal 2 kali per tahun", "tinggi"),
-        _t("Tetapkan dan tandai jalur serta titik evakuasi; adakan simulasi evakuasi bersama warga setiap tahun", "tinggi"),
-        _t("Perbaiki drainase mikro dan normalisasi saluran di titik genangan yang berulang", "tinggi"),
-        _t("Siagakan pompa, perahu karet, dan posko di kelurahan dengan genangan terlama sebelum musim hujan", "sedang"),
-        _t("Dahulukan kelompok rentan (lansia, anak, penyandang disabilitas) dalam rencana evakuasi kelurahan", "sedang"),
+        _t("Pasang alat peringatan dini (EWS) di kecamatan yang belum punya. Uji alatnya sebelum setiap musim hujan.", "tinggi"),
+        _t("Adakan sosialisasi kesiapsiagaan banjir di tingkat kelurahan, minimal 2 kali setahun.", "tinggi"),
+        _t("Tentukan jalur dan titik evakuasi, lalu beri tanda yang jelas. Latih warga lewat simulasi evakuasi setiap tahun.", "tinggi"),
+        _t("Perbaiki saluran air kecil dan bersihkan saluran di titik yang sering tergenang.", "tinggi"),
+        _t("Siapkan pompa, perahu karet, dan posko sebelum musim hujan di kelurahan yang genangannya paling lama.", "sedang"),
+        _t("Utamakan lansia, anak-anak, dan penyandang disabilitas dalam rencana evakuasi kelurahan.", "sedang"),
     ],
     1: [  # Waspada
-        _t("Lengkapi alat peringatan dini (EWS) di kelurahan rawan yang belum terpantau", "tinggi"),
-        _t("Periksa dan bersihkan saluran air serta pintu air sebelum musim hujan", "sedang"),
-        _t("Sosialisasikan kesiapsiagaan banjir dan rencana evakuasi tingkat RT/RW minimal 1 kali per tahun", "sedang"),
-        _t("Tetapkan dan umumkan titik kumpul serta nomor kontak darurat kelurahan", "sedang"),
-        _t("Pantau tren genangan tiap musim hujan; naikkan ke penanganan prioritas bila kejadian meningkat", "sedang"),
+        _t("Lengkapi alat peringatan dini (EWS) di kelurahan rawan yang belum terpantau.", "tinggi"),
+        _t("Periksa dan bersihkan saluran air serta pintu air sebelum musim hujan.", "sedang"),
+        _t("Sosialisasikan kesiapsiagaan banjir dan rencana evakuasi di tingkat RT/RW, minimal 1 kali setahun.", "sedang"),
+        _t("Tentukan titik kumpul dan umumkan nomor kontak darurat kelurahan.", "sedang"),
+        _t("Pantau genangan setiap musim hujan. Jika kejadian bertambah, naikkan ke penanganan prioritas.", "sedang"),
     ],
     2: [  # Menengah
-        _t("Pantau kondisi saluran dan titik genangan setiap bulan selama musim hujan", "sedang"),
-        _t("Pertahankan alat peringatan dini yang ada dan latih relawan kelurahan", "sedang"),
-        _t("Sosialisasikan kesiapsiagaan melalui RT/RW setiap tahun", "rendah"),
-        _t("Perbarui rencana kontinjensi kelurahan secara berkala", "rendah"),
+        _t("Pantau kondisi saluran dan titik genangan setiap bulan selama musim hujan.", "sedang"),
+        _t("Rawat alat peringatan dini yang sudah ada dan latih relawan kelurahan.", "sedang"),
+        _t("Sosialisasikan kesiapsiagaan banjir lewat RT/RW setiap tahun.", "rendah"),
+        _t("Perbarui rencana darurat kelurahan secara berkala.", "rendah"),
     ],
     3: [  # Rendah
-        _t("Pertahankan sistem peringatan dini dan pemeliharaan rutin saluran yang sudah ada", "rendah"),
-        _t("Cocokkan hasil dengan catatan banjir lapangan sebelum menurunkan prioritas suatu kecamatan", "sedang"),
-        _t("Pantau perubahan kejadian banjir dari tahun ke tahun dan hitung ulang klaster saat data baru masuk", "rendah"),
-        _t("Pastikan warga mengetahui jalur evakuasi dan kontak darurat", "rendah"),
+        _t("Jaga sistem peringatan dini tetap berfungsi dan rawat saluran air secara rutin.", "rendah"),
+        _t("Cek catatan banjir di lapangan sebelum menurunkan prioritas suatu kecamatan.", "sedang"),
+        _t("Pantau kejadian banjir dari tahun ke tahun. Hitung ulang klaster saat ada data baru.", "rendah"),
+        _t("Pastikan warga tahu jalur evakuasi dan nomor kontak darurat.", "rendah"),
     ],
 }
 

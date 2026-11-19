@@ -8,18 +8,25 @@
 <body>
 <div class="halaman">
   <header class="kop">
-    <span class="merek">Geopulse-ID</span>
+    <span class="merek"><span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2.5C12 2.5 5 10 5 14.5a7 7 0 0 0 14 0C19 10 12 2.5 12 2.5Z" fill="#B3261E"/><circle cx="12" cy="14.5" r="3" fill="#F2D479"/><circle cx="9.2" cy="12.2" r="1.2" fill="#FFFCFB"/><circle cx="14.8" cy="12.2" r="1.2" fill="#FFFCFB"/><circle cx="12" cy="17.8" r="1.1" fill="#FFFCFB"/></svg></span>Geopulse-ID</span>
     <span class="meta">Profil Kecamatan · dicetak {{ tanggal }}<br>Versi data: {{ versi }}</span>
   </header>
 
-  <h1>{{ r.kecamatan|title }}</h1>
-  <div class="sub">{{ r.wilayah|title }}</div>
+  <div class="judul">
+    <div>
+      <h1>{{ r.kecamatan|title }}</h1>
+      <div class="sub">{{ r.wilayah|title }}</div>
+    </div>
+    <span class="pill c{{ r.cluster_id|int }}">{{ r.cluster_name }}</span>
+  </div>
 
   <div class="ringkas">
     <div><span>Peringkat prioritas</span><b>#{{ r.rank_topsis|int }} dari {{ n }}</b></div>
     <div><span>Skor risiko (0–1)</span><b>{{ "%.3f"|format(r.skor_topsis) }}</b></div>
-    <div><span>Klaster</span><b>{{ r.cluster_id|int }} · {{ r.cluster_name }}</b></div>
+    <div class="c{{ r.cluster_id|int }}"><span>Klaster</span><b>{{ r.cluster_id|int }} · {{ r.cluster_name }}</b></div>
   </div>
+  <div class="bar"><i class="fill-c{{ r.cluster_id|int }}" style="width: {{ (r.skor_topsis * 100)|round|int }}%"></i></div>
+  <div class="bar-label"><span>0 (risiko rendah)</span><span>1 (risiko tinggi)</span></div>
   {% if batas %}<div class="sub">Kecamatan batas: posisi klasternya kurang pasti.</div>{% endif %}
 
   <h2>Kriteria penilaian</h2>
@@ -34,8 +41,8 @@
 
   <h2>Prioritas tindakan</h2>
   {% if rekomendasi %}
-    <ul>
-    {% for t in rekomendasi %}<li><b>[{{ t.prioritas }}]</b> {{ t.tindakan }}</li>{% endfor %}
+    <ul class="tindakan">
+    {% for t in rekomendasi %}<li><span class="prio {{ t.prioritas }}">{{ t.prioritas }}</span>{{ t.tindakan }}</li>{% endfor %}
     </ul>
     <div class="catatan">{{ catatan }}<br>Sumber: {{ sumber_rek }}</div>
   {% else %}

@@ -8,7 +8,7 @@
 <body>
 <div class="halaman">
   <header class="kop">
-    <span class="merek">Geopulse-ID</span>
+    <span class="merek"><span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2.5C12 2.5 5 10 5 14.5a7 7 0 0 0 14 0C19 10 12 2.5 12 2.5Z" fill="#B3261E"/><circle cx="12" cy="14.5" r="3" fill="#F2D479"/><circle cx="9.2" cy="12.2" r="1.2" fill="#FFFCFB"/><circle cx="14.8" cy="12.2" r="1.2" fill="#FFFCFB"/><circle cx="12" cy="17.8" r="1.1" fill="#FFFCFB"/></svg></span>Geopulse-ID</span>
     <span class="meta">Hasil Simulasi Bobot · dibuat {{ tanggal }}<br>Versi data: {{ versi }}</span>
   </header>
 
@@ -28,7 +28,7 @@
       <tr>
         <td>{{ h.kecamatan|title }}</td><td>{{ h.wilayah|title }}</td>
         <td class="num">{{ h.rank_bawaan }}</td><td class="num">{{ h.rank_baru }}</td><td class="num">{{ "%.3f"|format(h.skor_baru) }}</td>
-        <td>{% if h.delta > 0 %}naik {{ h.delta }}{% elif h.delta < 0 %}turun {{ -h.delta }}{% else %}tetap{% endif %}</td>
+        {% if h.delta > 0 %}<td class="naik">▲ naik {{ h.delta }}</td>{% elif h.delta < 0 %}<td class="turun">▼ turun {{ -h.delta }}</td>{% else %}<td class="tetap">tetap</td>{% endif %}
       </tr>
     {% endfor %}
     </tbody>

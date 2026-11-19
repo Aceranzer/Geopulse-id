@@ -4,6 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Geopulse-ID{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}" media="print">
@@ -12,40 +17,63 @@
 <body>
   <header class="topbar">
     <div class="container">
-      <div class="brand">Geopulse-ID</div>
-      <nav class="nav">
-        {% for href, label in nav %}
-          <a href="{{ href }}" {% if request.path == href %}class="active"{% endif %}>{{ label }}</a>
-        {% endfor %}
-      </nav>
+      <div class="topbar-card">
+        <a class="brand" href="/" aria-label="Geopulse-ID, ke Dashboard">
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2.5C12 2.5 5 10 5 14.5a7 7 0 0 0 14 0C19 10 12 2.5 12 2.5Z" fill="#FFFCFB" fill-opacity="0.95"/>
+              <circle cx="12" cy="14.5" r="3" fill="#F2D479"/>
+              <circle cx="9.2" cy="12.2" r="1.2" fill="#C44A3A"/>
+              <circle cx="14.8" cy="12.2" r="1.2" fill="#D97A2B"/>
+              <circle cx="12" cy="17.8" r="1.1" fill="#F2D479"/>
+            </svg>
+          </span>
+          <span>
+            <span class="brand-name">Geopulse-ID</span>
+            <span class="brand-sub">Prioritas mitigasi banjir DKI Jakarta</span>
+          </span>
+        </a>
+        <nav class="nav" aria-label="Menu utama">
+          {% for href, label in nav %}
+            <a href="{{ href }}" {% if request.path == href %}class="active" aria-current="page"{% endif %}>{{ label }}</a>
+          {% endfor %}
+        </nav>
+      </div>
     </div>
   </header>
 
   <!-- tampil hanya bila ada bobot aktif (diatur oleh bobot-aktif.js) -->
   <div id="banner-bobot" class="banner-bobot no-print" role="link" tabindex="0" hidden>
     <div class="container">
-      <span>ⓘ Bobot aktif: <b id="banner-nama"></b> · klik untuk ubah</span>
-      <button type="button" id="banner-reset" class="btn-kecil">Reset ke bawaan</button>
+      <div class="banner-in">
+        <span>ⓘ Bobot aktif: <b id="banner-nama"></b> · klik untuk ubah</span>
+        <button type="button" id="banner-reset" class="btn-kecil">Reset ke bawaan</button>
+      </div>
     </div>
   </div>
 
-  <main class="container" style="padding-top:24px; padding-bottom:32px;">
+  <main class="container">
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="footer">
-    <div class="container footer-grid">
-      <div>
-        <b>Geopulse-ID</b> · Sistem Prioritas Mitigasi Risiko Banjir Multi-Kriteria<br>
-        Proyek mahasiswa UKRIDA (SPK + Data Mining 2026).
-      </div>
-      <div>
-        Sumber data: <a href="https://data.jakarta.go.id" target="_blank" rel="noopener">Satu Data Jakarta</a> · BPBD Provinsi DKI Jakarta<br>
-        Data banjir {{ meta_data.tahun_awal }}–{{ meta_data.tahun_akhir }} ({{ meta_data.n_tahun }} tahun tersedia) · versi data {{ meta_data.versi }}
-      </div>
-      <div>
-        <a href="{{ github_url }}" target="_blank" rel="noopener">Kode sumber (GitHub)</a><br>
-        <a href="/metodologi">Metodologi &amp; Data</a>
+  <footer class="footer no-print">
+    <div class="container">
+      <div class="footer-card">
+        <div class="footer-brand">Geopulse-ID</div>
+        <div class="footer-grid">
+          <div>
+            Sistem prioritas mitigasi risiko banjir berdasarkan banyak kriteria.<br>
+            Proyek mahasiswa UKRIDA (SPK + Data Mining 2026).
+          </div>
+          <div>
+            Sumber data: <a href="https://data.jakarta.go.id" target="_blank" rel="noopener">Satu Data Jakarta</a> · BPBD Provinsi DKI Jakarta<br>
+            Data banjir {{ meta_data.tahun_awal }}–{{ meta_data.tahun_akhir }} ({{ meta_data.n_tahun }} tahun tersedia) · versi data {{ meta_data.versi }}
+          </div>
+          <div>
+            <a href="{{ github_url }}" target="_blank" rel="noopener">Kode sumber (GitHub)</a><br>
+            <a href="/metodologi">Metodologi &amp; Data</a>
+          </div>
+        </div>
       </div>
     </div>
   </footer>

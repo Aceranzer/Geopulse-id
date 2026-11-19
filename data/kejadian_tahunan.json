@@ -1,0 +1,23 @@
+{
+ "catatan": "Rata-rata kejadian banjir per kecamatan untuk tiap tahun data (dari data/interim/banjir_kelurahan_clean.csv).",
+ "tahun": [
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2019,
+  2020,
+  2024
+ ],
+ "rata": [
+  5.83,
+  6.0,
+  5.17,
+  7.48,
+  6.29,
+  5.74,
+  11.76,
+  11.9
+ ]
+}

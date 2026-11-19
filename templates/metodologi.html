@@ -2,28 +2,18 @@
 {% block title %}Metodologi & Data · Geopulse-ID{% endblock %}
 
 {% block head %}
-  <style>
-    .prosa { max-width: 1000px; }
-    .prosa h2 { font-size: 22px; margin: 32px 0 8px; }
-    .prosa p, .prosa li { font-size: 16px; line-height: 1.65; }
-    .prosa ul, .prosa ol { padding-left: 22px; margin: 6px 0; }
-    .prosa .table td, .prosa .table th { font-size: 14.5px; vertical-align: top; }
-    .prosa .table td.num, .prosa .table th.num { text-align: right; }
-    .rumus { background: var(--row-alt); border-radius: 6px; padding: 12px 16px; font-family: "Cascadia Mono", Consolas, monospace; font-size: 14px; margin: 8px 0; white-space: pre-wrap; }
-    .catatan { border: 1px solid var(--ink); border-radius: 6px; padding: 12px 16px; font-size: 15px; margin-top: 8px; }
-    .ya { font-weight: 700; } .tidak { color: var(--ink-soft); }
-    .alur { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 12px; }
-    .alur span { border: 1px solid var(--ink); border-radius: 999px; padding: 4px 14px; font-weight: 600; font-size: 15px; }
-    .alur i { font-style: normal; color: var(--ink-soft); }
-  </style>
 {% endblock %}
 
 {% block content %}
-<div class="prosa">
+<section class="page-head">
+  <span class="eyebrow">Penjelasan</span>
   <h1>Metodologi &amp; Data</h1>
-  <p class="muted" style="margin:0; color:var(--ink-soft);">
+  <p class="lead">
+    Dari mana datanya, bagaimana skor dihitung, dan apa batasannya.
     Versi data: {{ timestamp.replace("T", " ") }} · {{ n_kecamatan }} kecamatan daratan DKI Jakarta (tanpa Kepulauan Seribu).
   </p>
+</section>
+<div class="prosa card">
 
   <h2>1. Alur kerja</h2>
   <div class="alur" aria-label="Alur kerja">
@@ -41,13 +31,13 @@
 
   <h2>2. Sumber data</h2>
   <p>Data kejadian banjir tersedia untuk {{ n_tahun }} tahun: {{ rentang_tahun }}.</p>
-  <div style="overflow-x:auto;">
+  <div class="tabel-wrap">
   <table class="table">
     <thead><tr><th>Sumber</th><th>Status</th><th>Keterangan</th></tr></thead>
     <tbody>
       <tr><td>Kepadatan &amp; luas wilayah</td><td class="ya">Dipakai</td><td>Penduduk dan kepadatan per kecamatan. Luas memakai nilai 2014 karena 2015–2019 rusak.</td></tr>
       <tr><td>Kejadian banjir</td><td class="ya">Dipakai</td><td>Dasar kriteria bahaya: seberapa sering, setinggi apa, dan berapa lama banjir terjadi.</td></tr>
-      <tr><td>Alat peringatan dini (EWS)</td><td class="ya">Dipakai</td><td>Titik lokasi dihitung per kecamatan; koordinat tertukar dan duplikat dibersihkan.</td></tr>
+      <tr><td>Alat peringatan dini (EWS)</td><td class="ya">Dipakai</td><td>Titik lokasi dihitung per kecamatan. Koordinat yang tertukar dan data ganda sudah dibersihkan.</td></tr>
       <tr><td>Batas kecamatan (GeoJSON)</td><td class="ya">Dipakai</td><td>Dasar peta dan pencocokan lokasi.</td></tr>
       <tr><td>Rekap banjir provinsi</td><td class="tidak">Pembanding</td><td>Hanya tingkat provinsi.</td></tr>
       <tr><td>Rumah pompa</td><td class="tidak">Belum jadi kriteria</td><td>Sudah dibersihkan dan ada di tabel master, tetapi kriteria tetap 8 sesuai keputusan tim.</td></tr>
@@ -70,7 +60,7 @@
   <div class="rumus">skor = jarak ke kondisi terbaik ÷ (jarak ke terbaik + jarak ke terburuk)</div>
   <p>Bobot bawaan dihitung dari data (metode entropi): kriteria yang nilainya paling beragam antar-kecamatan mendapat bobot lebih besar. Jadi bila data berubah, bobot dan peringkat ikut bergeser. Bobot saat ini:</p>
   <p id="judul-aktif" class="muted" hidden>Kolom "Aktif" menampilkan bobot yang Anda terapkan: <b id="nama-aktif"></b>.</p>
-  <div style="overflow-x:auto;">
+  <div class="tabel-wrap">
   <table class="table">
     <thead><tr><th>Kriteria</th><th>Dimensi</th><th class="num">Entropi (bawaan)</th><th class="num">Sama rata</th><th class="num">Pakar</th><th class="num kol-aktif" hidden>Aktif</th></tr></thead>
     <tbody>
@@ -84,7 +74,7 @@
 
   <h2>5. Arti tiap kriteria</h2>
   <p>Contoh kecamatan dengan nilai tertinggi dan terendah (dari data saat ini) membantu menjawab "mengapa kecamatan A di atas B?".</p>
-  <div style="overflow-x:auto;">
+  <div class="tabel-wrap">
   <table class="table">
     <thead><tr><th>Kriteria</th><th>Satuan</th><th>Arah</th><th>Tertinggi</th><th>Terendah</th></tr></thead>
     <tbody>
@@ -97,16 +87,16 @@
 
   <h2>6. Pengelompokan (K-Means)</h2>
   <p>Kecamatan dikelompokkan berdasarkan skor risiko, warga terdampak per 1000 penduduk, dan kepadatan penduduk. Klaster 0 memiliki skor rata-rata tertinggi, klaster {{ k_final - 1 }} terendah.</p>
-  <p>Jumlah klaster dipilih {{ k_final }} agar mudah dibaca: empat tingkat prioritas. Grafik pemilihan ada di halaman <a href="/klaster">Klaster</a>; nilai silhouette hampir sama untuk k = 2–7 ({{ "%.3f"|format(sil_min) }}–{{ "%.3f"|format(sil_maks) }}), jadi tidak ada pilihan yang jelas lebih baik.</p>
+  <p>Jumlah klaster dipilih {{ k_final }} agar mudah dibaca: empat tingkat prioritas. Grafik pemilihan ada di halaman <a href="/klaster">Klaster</a>. Nilai silhouette hampir sama untuk k = 2–7 ({{ "%.3f"|format(sil_min) }}–{{ "%.3f"|format(sil_maks) }}), jadi tidak ada pilihan yang jelas lebih baik.</p>
   <p>Mutu model akhir: silhouette <b>{{ "%.3f"|format(metrics.silhouette) }}</b>, Davies-Bouldin <b>{{ "%.3f"|format(metrics.DBI) }}</b>, Calinski-Harabasz <b>{{ "%.1f"|format(metrics.CH) }}</b>.
     Ukuran klaster: {% for k in klaster %}{{ k.nama }} {{ k.n }}{% if not loop.last %}, {% endif %}{% endfor %}.
     Kecamatan dengan silhouette di bawah {{ batas }} ditandai "kurang pasti" karena berada dekat batas klaster.</p>
 
   <h2>7. Keterbatasan</h2>
   <ul>
-    <li>Silhouette {{ "%.2f"|format(metrics.silhouette) }} tergolong lemah: klaster saling berdekatan. Wajar untuk {{ n_kecamatan }} kecamatan; baca klaster sebagai tingkat prioritas, bukan kelompok yang terpisah tegas.</li>
+    <li>Silhouette {{ "%.2f"|format(metrics.silhouette) }} tergolong lemah: klaster saling berdekatan. Ini wajar untuk {{ n_kecamatan }} kecamatan. Baca klaster sebagai tingkat prioritas, bukan kelompok yang terpisah tegas.</li>
     <li>Data banjir hanya {{ n_tahun }} dari 12 tahun, dan data 2020 hanya sampai September. Daerah yang jarang melapor bisa tampak lebih aman dari kenyataan.</li>
-    <li>Kepadatan penduduk berasal dari 2019; alat peringatan dini dari 2024–2025.</li>
+    <li>Kepadatan penduduk berasal dari 2019, sedangkan alat peringatan dini dari 2024–2025.</li>
     <li>Peringkat sangat bergantung pada bobot. Coba ganti skenario di halaman Simulasi.</li>
     <li>Model belum memakai ketinggian tanah, curah hujan, atau kondisi saluran air.</li>
   </ul>
