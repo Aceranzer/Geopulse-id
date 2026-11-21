@@ -12,12 +12,13 @@
   box-shadow: var(--shadow-card);
   padding: 12px 20px;
 }
+/* logo tulisan: "Geopulse" gelap, huruf "o" terendam air merah, "-ID" merah */
+.wordmark { font-family: var(--font-display); font-weight: 800; font-size: 1.625rem; letter-spacing: -0.035em; line-height: 1; color: var(--color-ink); white-space: nowrap; }
+.wordmark .wm-o { display: inline-block; vertical-align: baseline; width: 0.575em; height: 0.575em; margin: 0 0.012em -0.012em 0.006em; }
+.wordmark .wm-air { fill: var(--color-accent); }
+.wordmark .wm-id { color: var(--color-accent); letter-spacing: -0.01em; }
+.footer-brand .wordmark { font-size: 1.375rem; }
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--color-ink); flex-shrink: 0; }
-.brand-mark {
-  width: 46px; height: 46px; flex-shrink: 0; object-fit: contain;   /* logo Geopulse-ID (ikon radar) */
-}
-.brand-name { font-family: var(--font-display); font-weight: 800; font-size: var(--text-lg); letter-spacing: var(--tracking-display); line-height: 1.1; display: block; }
-.brand-sub { display: block; font-size: var(--text-xs); color: var(--color-muted); margin-top: 3px; }
 
 .nav {
   display: flex; align-items: center; gap: 4px;
