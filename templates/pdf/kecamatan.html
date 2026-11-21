@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8">
   <title>Profil {{ r.kecamatan|title }} · Geopulse-ID</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <style>{{ pdf_css()|safe }}</style>
 </head>
 <body>
 <div class="halaman">
   <header class="kop">
-    <span class="merek"><span class="logo"><img src="{{ logo_uri() }}" alt="" width="26" height="26"></span>Geopulse-ID</span>
+    <span class="merek" aria-label="Geopulse-ID">Ge<img class="o" src="{{ logo_uri() }}" alt="o">pulse<span class="id">-ID</span></span>
     <span class="meta">Profil Kecamatan · dicetak {{ tanggal }}<br>Versi data: {{ versi }}</span>
   </header>
 
@@ -42,7 +43,7 @@
   <h2>Tindakan untuk petugas pemerintah</h2>
   {% if rekomendasi %}
     <ul class="tindakan">
-    {% for t in rekomendasi %}<li><span class="prio {{ t.prioritas }}">{{ t.prioritas }}</span>{{ t.tindakan }}</li>{% endfor %}
+    {% for t in rekomendasi %}<li>{{ t.tindakan }}</li>{% endfor %}
     </ul>
     <div class="catatan">{{ catatan }}<br>Sumber: {{ sumber_rek }}</div>
   {% else %}

@@ -57,10 +57,10 @@ app.jinja_env.globals["pdf_css"] = lambda: (config.BASE_DIR / "static" / "css" /
 
 
 def logo_uri():
-    """Logo Geopulse-ID (ikon radar) sebagai data URI, untuk PDF; alasan sama dengan pdf_css."""
+    """Huruf "o" logo Geopulse-ID (sama dengan header dashboard) sebagai data URI SVG, untuk PDF."""
     import base64
-    data = (config.BASE_DIR / "static" / "img" / "logo-mark-96.png").read_bytes()
-    return "data:image/png;base64," + base64.b64encode(data).decode("ascii")
+    data = (config.BASE_DIR / "static" / "img" / "logo-o.svg").read_bytes()
+    return "data:image/svg+xml;base64," + base64.b64encode(data).decode("ascii")
 
 
 app.jinja_env.globals["logo_uri"] = logo_uri

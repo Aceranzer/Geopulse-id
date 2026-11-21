@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Geopulse-ID{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/logo-o.svg') }}">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,11 +21,7 @@
     <div class="container">
       <div class="topbar-card">
         <a class="brand" href="/" aria-label="Geopulse-ID, ke Dashboard">
-          <img class="brand-mark" src="{{ url_for('static', filename='img/logo-mark-96.png') }}" alt="" width="44" height="44">
-          <span>
-            <span class="brand-name">Geopulse-ID</span>
-            <span class="brand-sub">Prioritas mitigasi banjir DKI Jakarta</span>
-          </span>
+          <span class="wordmark" aria-hidden="true">Ge<svg class="wm-o" viewBox="0 0 60 60" aria-hidden="true"><defs><clipPath id="wm-o-isi"><circle cx="30" cy="30" r="22"/></clipPath></defs><path clip-path="url(#wm-o-isi)" d="M0 33c5-4 10-4 15 0s10 4 15 0 10-4 15 0 10 4 15 0V60H0Z" class="wm-air"/><circle cx="30" cy="30" r="24" fill="none" stroke="currentColor" stroke-width="12"/></svg>pulse<span class="wm-id">-ID</span></span>
         </a>
         <nav class="nav" aria-label="Menu utama">
           {% for href, label in nav %}
@@ -52,7 +49,7 @@
   <footer class="footer no-print">
     <div class="container">
       <div class="footer-card">
-        <div class="footer-brand">Geopulse-ID</div>
+        <div class="footer-brand"><span class="wordmark" role="img" aria-label="Geopulse-ID">Ge<svg class="wm-o" viewBox="0 0 60 60" aria-hidden="true"><defs><clipPath id="wm-o-isi-2"><circle cx="30" cy="30" r="22"/></clipPath></defs><path clip-path="url(#wm-o-isi-2)" d="M0 33c5-4 10-4 15 0s10 4 15 0 10-4 15 0 10 4 15 0V60H0Z" class="wm-air"/><circle cx="30" cy="30" r="24" fill="none" stroke="currentColor" stroke-width="12"/></svg>pulse<span class="wm-id">-ID</span></span></div>
         <div class="footer-grid">
           <div>
             Sistem prioritas mitigasi risiko banjir berdasarkan banyak kriteria.<br>

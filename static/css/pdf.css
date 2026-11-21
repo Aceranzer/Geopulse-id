@@ -7,11 +7,12 @@ body { font-family: "Plus Jakarta Sans", "Inter", "DejaVu Sans", Arial, Helvetic
 .halaman { max-width: 186mm; margin: 0 auto; }
 
 /* kepala: pita merek */
-header.kop { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #B3261E; color: #fff; border-radius: 12px; padding: 10px 16px; margin-bottom: 14px; }
-header.kop .merek { display: flex; align-items: center; gap: 9px; font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
-header.kop .logo { width: 32px; height: 32px; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center; }
-header.kop .logo img { width: 28px; height: 28px; display: block; }
-header.kop .meta { font-size: 9.5px; text-align: right; color: #FBE4E1; line-height: 1.45; }
+header.kop { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #FFFCFB; color: #2A1A19; border: 1px solid #E6D9D6; border-top: 4px solid #B3261E; border-radius: 12px; padding: 10px 16px; margin-bottom: 14px; }
+/* logo tulisan sama dengan dashboard: "Geopulse" gelap, huruf o terendam air, "-ID" merah */
+header.kop .merek { font-size: 21px; font-weight: 800; letter-spacing: -0.035em; line-height: 1; color: #2A1A19; white-space: nowrap; }
+header.kop .merek .o { display: inline-block; width: 0.575em; height: 0.575em; vertical-align: baseline; margin: 0 0.012em -0.012em 0.006em; }
+header.kop .merek .id { color: #B3261E; letter-spacing: -0.01em; }
+header.kop .meta { font-size: 9.5px; text-align: right; color: #6A5552; line-height: 1.45; }
 
 h1 { font-size: 24px; line-height: 1.15; margin: 0 0 2px; color: #2A1A19; letter-spacing: -0.01em; font-weight: 800; }
 h2 { font-size: 11px; margin: 16px 0 6px; padding-left: 8px; border-left: 4px solid #B3261E; text-transform: uppercase; letter-spacing: .07em; color: #8E1B15; font-weight: 800; }
@@ -54,10 +55,6 @@ tr { page-break-inside: avoid; }
 /* tindakan */
 ul.tindakan { list-style: none; margin: 4px 0; padding: 0; }
 ul.tindakan li { background: #FBF7F6; border: 1px solid #EFE4E2; border-radius: 9px; padding: 6px 10px; margin-bottom: 5px; page-break-inside: avoid; }
-.prio { display: inline-block; min-width: 46px; text-align: center; border: 1px solid; border-radius: 999px; padding: 0 8px; margin-right: 6px; font-size: 9.5px; font-weight: 800; }
-.prio.tinggi { background: #FDF3F1; border-color: #F3C8C1; color: #8C2B1E; }
-.prio.sedang { background: #FEFAEC; border-color: #F2DF9F; color: #422E04; }
-.prio.rendah { background: #F2F8EE; border-color: #C3E0B4; color: #2D5918; }
 
 .catatan { background: #FDF1F0; border: 1px solid #F2C4BF; border-radius: 10px; padding: 7px 11px; margin-top: 8px; font-size: 10.5px; color: #5A2B27; }
 footer.kaki { margin-top: 16px; border-top: 2px solid #E6D9D6; padding-top: 6px; font-size: 9.5px; color: #6A5552; }
