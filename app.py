@@ -14,6 +14,7 @@ from flask import Flask, Response, abort, jsonify, redirect, render_template, re
 import config
 from src.pipeline import (CLUSTER_COLORS, CLUSTER_NAMES, CRIT_COLS, CRITERIA, K_FINAL, SILHOUETTE_BATAS,
                           W_EXPERT, run_pipeline)
+from src.pipeline import CLUSTER_FEATURES, SEED, _order_labels, build_features
 from src.recommend import CATATAN_VALIDASI, SUMBER, rekomendasi
 from src.tahun import rentang_tahun, tahun_data
 from src.topsis import shannon_entropy_weights
@@ -269,6 +270,39 @@ def interpretasi_kriteria():
     return hasil
 
 
+_LABEL_FITUR = {"skor_topsis": "Skor risiko (TOPSIS)", "jiwa_per_1000": "Warga terdampak per 1000",
+                "kepadatan_jiwa_km2": "Kepadatan (jiwa/km²)"}
+_CONTOH_KMEANS = "MATRAMAN"     # peringkat #12 tapi bukan klaster tertinggi: contoh yang paling menjelaskan
+
+
+def penjelasan_kmeans():
+    """Angka nyata untuk bagian perhitungan K-Means di Metodologi: praproses, pusat klaster, dan contoh satu kecamatan.
+    Model dilatih ulang dengan pengaturan yang sama dengan pipeline (seed sama), jadi labelnya sama dengan clustered_result.csv."""
+    from sklearn.cluster import KMeans
+    t = pd.read_csv(config.TOPSIS_CSV).set_index("kecamatan")
+    X = t[CLUSTER_FEATURES]
+    Z = build_features(t)
+    km = KMeans(K_FINAL, n_init=100, random_state=SEED).fit(Z)
+    lab = _order_labels(km.labels_, t.skor_topsis.values)
+    # pusat klaster di ruang terstandar, diurutkan sesuai id klaster (0 = skor tertinggi)
+    pusat = np.vstack([Z.values[lab == i].mean(axis=0) for i in range(K_FINAL)])
+    log_cols = [k for k in CLUSTER_FEATURES if k != "skor_topsis" and X[k].skew() > 1 and (X[k] >= 0).all()]
+    praproses = [{"fitur": _LABEL_FITUR[k], "miring": round(float(X[k].skew()), 2), "log": k in log_cols,
+                  "rata": float(X[k].mean()), "sd": float(X[k].std())} for k in CLUSTER_FEATURES]
+    pusat_asli = [{"id": i, "nama": CLUSTER_NAMES[i], "n": int((lab == i).sum()), "warna": CLUSTER_COLORS[i],
+                   "nilai": [float(X[k].values[lab == i].mean()) for k in CLUSTER_FEATURES],
+                   "z": [float(v) for v in pusat[i]]} for i in range(K_FINAL)]
+    nama = _CONTOH_KMEANS if _CONTOH_KMEANS in Z.index else t.index[0]
+    z = Z.loc[nama].values
+    jarak = np.sqrt(((pusat - z) ** 2).sum(axis=1))
+    contoh = {"nama": nama.title(), "rank": int(t.loc[nama, "rank_topsis"]),
+              "asli": [float(X.loc[nama, k]) for k in CLUSTER_FEATURES], "z": [float(v) for v in z],
+              "jarak": [{"nama": CLUSTER_NAMES[i], "d": float(jarak[i]), "warna": CLUSTER_COLORS[i]} for i in range(K_FINAL)],
+              "pilih": CLUSTER_NAMES[int(jarak.argmin())]}
+    return {"fitur": [_LABEL_FITUR[k] for k in CLUSTER_FEATURES], "praproses": praproses, "pusat": pusat_asli,
+            "contoh": contoh, "inersia": float(km.inertia_), "n_init": 100, "seed": SEED}
+
+
 @app.route("/metodologi")
 def metodologi():
     metrics = baca_metrics()
@@ -285,7 +319,7 @@ def metodologi():
         klaster=[{"id": int(i), "nama": CLUSTER_NAMES[int(i)], "n": n} for i, n in mb["ukuran_klaster"].items()],
         sil_min=sw.silhouette.min(), sil_maks=sw.silhouette.max(), sil_k=sw.silhouette.loc[K_FINAL],
         n_tahun=len(tahun_data(config.RAW_DIR)), rentang_tahun=metrics["rentang_tahun"],
-        batas=SILHOUETTE_BATAS, catatan=CATATAN_VALIDASI)
+        batas=SILHOUETTE_BATAS, catatan=CATATAN_VALIDASI, km=penjelasan_kmeans())
 
 
 @app.route("/simulasi")
